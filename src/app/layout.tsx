@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Gestión de Tienda",
-  description: "Sistema de gestión comercial multi-sucursal",
+  title: "Zona iOS — Gestión",
+  description: "Sistema de gestión comercial multi-sucursal — Zona iOS",
 };
 
 export default function RootLayout({

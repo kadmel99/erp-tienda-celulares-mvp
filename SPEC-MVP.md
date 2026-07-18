@@ -1,6 +1,6 @@
-# Sistema de Gestión Comercial — Cadena de Tiendas de Celulares | Spec MVP v1.0
+# Zona iOS — Sistema de Gestión Comercial | Spec MVP v1.0
 
-> Proyecto independiente de Tithelio. Cliente: cadena de tiendas de dispositivos Apple/accesorios, sede principal Medellín + sucursales en Tolima y otras zonas de Colombia.
+> Proyecto independiente de Tithelio. Cliente: **Zona iOS** — cadena de tiendas de dispositivos Apple/accesorios, sede principal Medellín + sucursales en Tolima y otras zonas de Colombia. Logo: [`public/logo-zona-ios.png`](./public/logo-zona-ios.png).
 
 ---
 

@@ -2,6 +2,19 @@
 
 > Mockup de referencia: [artifact publicado](https://claude.ai/code/artifact/4955c7af-8a2f-4f6d-8b9a-566f0263692d) (pantallas de Punto de venta y Dashboard). Este documento formaliza esa dirección visual en tokens implementables.
 
+## 0. Marca
+
+Cliente: **Zona iOS**. Logo en [`public/logo-zona-ios.png`](./public/logo-zona-ios.png) — badge cromado/plateado fotorrealista (manzana con hoja), sin versión transparente disponible (fondo gris metálico integrado en el PNG).
+
+**Por qué encaja con este estilo**: el cromo/plateado del logo dialoga directo con el material "aluminio cepillado + vidrio" ya definido — no hubo que ajustar la paleta para acomodarlo.
+
+**Regla de uso — nunca a tamaño de ícono pequeño sin recortar**: el logo trae texto integrado en el gráfico ("ZONA / iOS / VENTA DE IPHONE Y ACCESORIOS") que se vuelve ilegible por debajo de ~60px. Dos tratamientos:
+
+1. **Badge circular recortado** (header de cada pantalla, ticket/letterhead): `border-radius: 50%`, `object-fit: cover`, `object-position: 50% 38%` sobre un contenedor de 34-44px con el mismo bisel que el resto de superficies flotantes (`box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 3px 8px rgba(38,36,32,0.28)`). El nombre "Zona iOS" se escribe aparte con la tipografía del sistema — nunca se depende del texto dentro de la imagen para que sea legible.
+2. **Logo completo sin recortar** — reservado para momentos "hero" poco frecuentes (pantalla de login, splash), donde sí puede mostrarse grande y el texto interno es legible.
+
+Implementado en [`src/app/page.tsx`](./src/app/page.tsx) (tratamiento 1) y en el mockup (header + membrete del ticket).
+
 ---
 
 ## 1. Filosofía

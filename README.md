@@ -1,4 +1,4 @@
-# Sistema de Gestión Comercial — Cadena de Tiendas de Celulares
+# Zona iOS — Sistema de Gestión Comercial
 
 Proyecto independiente (no forma parte del repo de Tithelio). Ver especificación funcional y de datos completa en [`SPEC-MVP.md`](./SPEC-MVP.md).
 
