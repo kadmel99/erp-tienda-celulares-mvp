@@ -1,26 +1,101 @@
 @import "tailwindcss";
 
+/* Tokens — ver SPEC-ESTILO.md (skeuomorfismo sutil: aluminio cepillado + vidrio Aqua) */
 @theme {
-  --color-canvas-bg: #F7F7F8;
-  --color-card-bg: #FFFFFF;
-  --color-border: #E4E4E7;
+  --color-bg: #DDDAD3;
+  --color-panel: #F7F6F2;
+  --color-panel-raised: #EEEBE3;
+  --color-panel-raised-hi: #F9F7F2;
 
-  --color-primary: #1D4ED8;
-  --color-primary-hover: #1E40AF;
-  --color-primary-soft: #EFF6FF;
+  --color-ink: #262420;
+  --color-ink-soft: #6C685F;
+  --color-ink-faint: #99958A;
 
-  --color-text: #18181B;
-  --color-text-muted: #71717A;
+  --color-accent: #1E8A9E;
+  --color-accent-deep: #146575;
+  --color-accent-hi: #4FB6CA;
+  --color-accent-soft: #D8ECEF;
 
-  --color-success: #16A34A;
-  --color-success-bg: #DCFCE7;
-  --color-warning: #D97706;
-  --color-warning-bg: #FEF3C7;
-  --color-danger: #DC2626;
-  --color-danger-bg: #FEE2E2;
+  --color-success: #4C8A5C;
+  --color-success-soft: #DEEAE0;
+  --color-danger: #B8523F;
+  --color-danger-soft: #F4DBD4;
+
+  --color-line: #CFCBC0;
+  --color-line-strong: #B3AEA0;
+}
+
+:root {
+  --bg-brush-a: rgba(255, 255, 255, 0.5);
+  --shadow-panel: 0 1px 2px rgba(38, 36, 32, 0.06), 0 6px 16px rgba(38, 36, 32, 0.1);
+  --shadow-inset: inset 0 1px 2px rgba(38, 36, 32, 0.16), inset 0 -1px 0 rgba(255, 255, 255, 0.5);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #1E1D1A;
+    --color-panel: #2A2925;
+    --color-panel-raised: #35342C;
+    --color-panel-raised-hi: #3C3B32;
+
+    --color-ink: #ECE9E1;
+    --color-ink-soft: #AEA99D;
+    --color-ink-faint: #77736A;
+
+    --color-accent: #35A6BB;
+    --color-accent-deep: #1E7A8C;
+    --color-accent-hi: #5CC3D6;
+    --color-accent-soft: #1B3A40;
+
+    --color-success: #6BAE79;
+    --color-success-soft: #253829;
+    --color-danger: #CC7562;
+    --color-danger-soft: #3C2721;
+
+    --color-line: rgba(255, 255, 255, 0.09);
+    --color-line-strong: rgba(255, 255, 255, 0.17);
+
+    --bg-brush-a: rgba(255, 255, 255, 0.045);
+    --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 20px rgba(0, 0, 0, 0.35);
+    --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #1E1D1A;
+  --color-panel: #2A2925;
+  --color-panel-raised: #35342C;
+  --color-panel-raised-hi: #3C3B32;
+
+  --color-ink: #ECE9E1;
+  --color-ink-soft: #AEA99D;
+  --color-ink-faint: #77736A;
+
+  --color-accent: #35A6BB;
+  --color-accent-deep: #1E7A8C;
+  --color-accent-hi: #5CC3D6;
+  --color-accent-soft: #1B3A40;
+
+  --color-success: #6BAE79;
+  --color-success-soft: #253829;
+  --color-danger: #CC7562;
+  --color-danger-soft: #3C2721;
+
+  --color-line: rgba(255, 255, 255, 0.09);
+  --color-line-strong: rgba(255, 255, 255, 0.17);
+
+  --bg-brush-a: rgba(255, 255, 255, 0.045);
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 20px rgba(0, 0, 0, 0.35);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+  color-scheme: dark;
 }
 
 body {
-  background: var(--color-canvas-bg);
-  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  background:
+    repeating-linear-gradient(100deg, var(--bg-brush-a) 0px, var(--bg-brush-a) 1px, transparent 1px, transparent 3px),
+    var(--color-bg);
+  color: var(--color-ink);
 }
