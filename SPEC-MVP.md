@@ -57,307 +57,23 @@ Todo movimiento (venta, abono, apertura/cierre de caja, cambio de inventario) qu
 
 ---
 
-## 5. Modelo de datos (Prisma, borrador)
+## 5. Modelo de datos
 
-```prisma
-enum UserRole {
-  ADMIN_GENERAL
-  OPERADOR
-}
+> El modelo de datos vive únicamente en [`prisma/schema.prisma`](./prisma/schema.prisma) — es la fuente de verdad (probado: `prisma generate`, `tsc --noEmit` y `next build` corren limpios contra ese archivo). Este documento ya no incluye una copia del schema para no arriesgar que las dos versiones diverjan; cualquier cambio de modelo se hace ahí directamente.
 
-model Sucursal {
-  id            String   @id @default(cuid())
-  nombre        String
-  ciudad        String
-  direccion     String?
-  activa        Boolean  @default(true)
-  createdAt     DateTime @default(now())
+Resumen de entidades (ver el archivo para campos, enums e índices completos):
 
-  usuarios      Usuario[]
-  inventario    InventoryItem[]
-  ventas        Sale[]
-  apartados     Apartado[]
-  cajas         CashRegisterSession[]
-  facturas      Invoice[]
-  prospectos    Prospecto[]
-}
-
-model Usuario {
-  id            String   @id @default(cuid())
-  nombre        String
-  email         String   @unique
-  passwordHash  String
-  rol           UserRole
-  sucursalId    String?           // null si es ADMIN_GENERAL (ve todas)
-  sucursal      Sucursal?         @relation(fields: [sucursalId], references: [id])
-  activo        Boolean  @default(true)
-  createdAt     DateTime @default(now())
-}
-
-enum ProductCondition {
-  NUEVO
-  USADO
-  REACONDICIONADO
-  EXHIBICION
-}
-
-enum ProductCategory {
-  IPHONE
-  IPAD
-  APPLE_WATCH
-  AIRPODS
-  FORRO
-  CARGADOR
-  VIDRIO
-  ACCESORIO
-}
-
-model Product {
-  id              String            @id @default(cuid())
-  sku             String            @unique
-  nombre          String
-  categoria       ProductCategory
-  marca           String?
-  modelo          String?
-  color           String?
-  capacidad       String?
-  imei            String?           @unique   // null para accesorios
-  serial          String?
-  condicion       ProductCondition  @default(NUEVO)
-  costo           Decimal           @db.Decimal(12,2)
-  precioVenta     Decimal           @db.Decimal(12,2)
-  tieneGarantia   Boolean           @default(false)
-  mesesGarantia   Int?
-  imageUrl        String?
-  createdAt       DateTime          @default(now())
-
-  sucursalId      String
-  sucursal        Sucursal          @relation(fields: [sucursalId], references: [id])
-  movimientos     InventoryMovement[]
-
-  @@index([sucursalId])
-  @@index([imei])
-}
-
-// alias usado en el resto del documento
-model InventoryItem {
-  // = Product; se deja Product como nombre de modelo real, InventoryItem es el concepto de negocio
-}
-
-enum InventoryMovementType {
-  ENTRADA
-  SALIDA
-  AJUSTE
-  TRASLADO
-}
-
-model InventoryMovement {
-  id            String                 @id @default(cuid())
-  productId     String
-  product       Product                @relation(fields: [productId], references: [id])
-  tipo          InventoryMovementType
-  cantidad      Int                    @default(1)
-  motivo        String?
-  referenceType String?                // "VENTA" | "APARTADO" | "PAGO_ESPECIE" | "RECEPCION" | "AJUSTE"
-  referenceId   String?
-  userId        String
-  createdAt     DateTime               @default(now())
-
-  @@index([productId, createdAt])
-}
-
-model Cliente {
-  id            String   @id @default(cuid())
-  nombre        String
-  telefono      String?
-  correo        String?
-  ciudad        String?
-  createdAt     DateTime @default(now())
-
-  ventas        Sale[]
-  apartados     Apartado[]
-}
-
-model Prospecto {
-  id              String   @id @default(cuid())
-  nombre          String?
-  telefono        String?
-  correo          String?
-  productoInteres String?
-  presupuesto     Decimal? @db.Decimal(12,2)
-  origen          String   @default("QR")   // fuente de captura
-  sucursalId      String
-  sucursal        Sucursal @relation(fields: [sucursalId], references: [id])
-  createdAt       DateTime @default(now())
-}
-
-enum PaymentMethod {
-  EFECTIVO
-  TRANSFERENCIA
-  TARJETA
-  MIXTO
-}
-
-model Sale {
-  id            String        @id @default(cuid())
-  sucursalId    String
-  sucursal      Sucursal      @relation(fields: [sucursalId], references: [id])
-  clienteId     String?
-  cliente       Cliente?      @relation(fields: [clienteId], references: [id])
-  userId        String
-  total         Decimal       @db.Decimal(12,2)
-  metodoPago    PaymentMethod
-  items         SaleItem[]
-  invoice       Invoice?
-  tradeIn       TradeIn?
-  createdAt     DateTime      @default(now())
-}
-
-model SaleItem {
-  id          String  @id @default(cuid())
-  saleId      String
-  sale        Sale    @relation(fields: [saleId], references: [id])
-  productId   String
-  cantidad    Int     @default(1)
-  precioUnit  Decimal @db.Decimal(12,2)
-}
-
-enum ApartadoStatus {
-  ACTIVO
-  SALDADO
-  CANCELADO
-}
-
-model Apartado {
-  id              String          @id @default(cuid())
-  sucursalId      String
-  sucursal        Sucursal        @relation(fields: [sucursalId], references: [id])
-  clienteId       String
-  cliente         Cliente         @relation(fields: [clienteId], references: [id])
-  productId       String
-  valorTotal      Decimal         @db.Decimal(12,2)
-  saldoPendiente  Decimal         @db.Decimal(12,2)
-  fechaLimite     DateTime?
-  status          ApartadoStatus  @default(ACTIVO)
-  userId          String
-  createdAt       DateTime        @default(now())
-
-  abonos          Abono[]
-  seguimientos    CarteraSeguimiento[]
-}
-
-model Abono {
-  id            String        @id @default(cuid())
-  apartadoId    String
-  apartado      Apartado      @relation(fields: [apartadoId], references: [id])
-  monto         Decimal       @db.Decimal(12,2)
-  metodoPago    PaymentMethod
-  reciboUrl     String?       // PDF del recibo de caja generado
-  userId        String
-  createdAt     DateTime      @default(now())
-}
-
-// Cartera: se deriva de Apartado.saldoPendiente + antigüedad calculada en query,
-// no requiere modelo propio salvo la bitácora de seguimiento:
-model CarteraSeguimiento {
-  id            String    @id @default(cuid())
-  apartadoId    String
-  apartado      Apartado  @relation(fields: [apartadoId], references: [id])
-  nota          String
-  proximaAccion DateTime?
-  userId        String
-  createdAt     DateTime  @default(now())
-}
-
-model TradeIn {
-  id                String   @id @default(cuid())
-  saleId            String   @unique
-  sale              Sale     @relation(fields: [saleId], references: [id])
-  imei              String?
-  modelo            String
-  condicion         String
-  saludBateria      String?
-  observaciones      String?
-  valorReconocido   Decimal  @db.Decimal(12,2)
-  productoResultanteId String?   // Product creado en inventario como USADO
-  createdAt         DateTime @default(now())
-}
-
-enum InvoiceStatus {
-  EMITIDA
-  ANULADA
-}
-
-model Invoice {
-  id              String         @id @default(cuid())
-  sucursalId      String
-  sucursal        Sucursal       @relation(fields: [sucursalId], references: [id])
-  saleId          String         @unique
-  sale            Sale           @relation(fields: [saleId], references: [id])
-  numero          Int                       // consecutivo por sucursal
-  pdfUrl          String
-  status          InvoiceStatus  @default(EMITIDA)
-  enviadaContadoraEn DateTime?
-  createdAt       DateTime       @default(now())
-
-  @@unique([sucursalId, numero])
-}
-
-model CashRegisterSession {
-  id              String    @id @default(cuid())
-  sucursalId      String
-  sucursal        Sucursal  @relation(fields: [sucursalId], references: [id])
-  userId          String
-  saldoInicial    Decimal   @db.Decimal(12,2)
-  saldoFinalEsperado Decimal? @db.Decimal(12,2)
-  saldoFinalContado  Decimal? @db.Decimal(12,2)
-  diferencia      Decimal?  @db.Decimal(12,2)
-  abiertaEn       DateTime  @default(now())
-  cerradaEn       DateTime?
-  movimientos     CashMovement[]
-}
-
-enum CashMovementType {
-  INGRESO_VENTA
-  INGRESO_ABONO
-  INGRESO_CAJA_MENOR
-  EGRESO_CAJA_MENOR
-  OTRO
-}
-
-model CashMovement {
-  id            String                @id @default(cuid())
-  sessionId     String
-  session       CashRegisterSession   @relation(fields: [sessionId], references: [id])
-  tipo          CashMovementType
-  monto         Decimal               @db.Decimal(12,2)
-  concepto      String?
-  referenceId   String?
-  createdAt     DateTime              @default(now())
-}
-
-enum WarrantyStatus {
-  RECIBIDO
-  EN_REVISION
-  EN_REPARACION
-  ENVIADO_PROVEEDOR
-  APROBADO
-  RECHAZADO
-  ENTREGADO
-}
-
-model Warranty {
-  id            String          @id @default(cuid())
-  productId     String
-  clienteId     String
-  motivo        String
-  diagnostico   String?
-  status        WarrantyStatus  @default(RECIBIDO)
-  userId        String
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-}
-```
+| Entidad | Rol |
+|---|---|
+| `Sucursal`, `Usuario` | Administración y roles (`ADMIN_GENERAL` / `OPERADOR`) |
+| `Product`, `InventoryMovement` | Catálogo con IMEI/serial por sucursal y su historial de movimientos |
+| `Cliente`, `Prospecto` | Clientes existentes vs. leads capturados por QR |
+| `Sale`, `SaleItem` | Ventas de POS y sus líneas |
+| `Apartado`, `Abono`, `CarteraSeguimiento` | Separado con abonos parciales + bitácora de cobranza |
+| `TradeIn` | Pago en especie (equipo usado recibido como parte de pago) |
+| `Invoice` | Factura interna con numeración consecutiva por sucursal |
+| `CashRegisterSession`, `CashMovement` | Caja (apertura/cierre) y caja menor, unificadas |
+| `Warranty` | Postventa/garantías |
 
 ---
 
@@ -478,3 +194,17 @@ model Warranty {
 | **Total** | **~17-24 semanas (≈ 4-6 meses, 1 dev)** |
 
 > Nota: esta tabla es para planeación interna, no para compartir tal cual con el cliente sin revisar cifras de precio.
+
+---
+
+## 11. Preguntas abiertas (resolver antes de programar el módulo correspondiente)
+
+| # | Pregunta | Módulo afectado | Por qué importa |
+|---|---|---|---|
+| 1 | Si un apartado se cancela, ¿se devuelve el abono al cliente o queda como saldo a favor para otra compra? | Apartados (6.6) | Define si `ApartadoStatus.CANCELADO` dispara un `CashMovement` de egreso o no — sin esto no se puede programar la cancelación. |
+| 2 | Cuando hay pago en especie, ¿`Sale.total` es el valor bruto del producto o ya neto del valor reconocido del trade-in? | POS (6.5) / Pago en especie (6.7) | Afecta el cálculo del recibo, lo que se factura y lo que se registra en caja — hay que fijarlo antes de tocar el checkout. |
+| 3 | Al anular una factura, ¿el número consecutivo se reutiliza o queda con un hueco? | Facturación interna (6.10) | Cambia la validación de `@@unique([sucursalId, numero])` y cómo se calcula el siguiente número. |
+| 4 | Cuando un prospecto captado por QR termina comprando, ¿se convierte automáticamente en `Cliente` o quedan como registros separados sin relación? | QR/Prospectos (6.4) | Si se promueve automático, hace falta una regla de "match" (por teléfono/correo) antes de programar el checkout. |
+| 5 | ¿Cuál es el formato exacto del Excel que usan hoy para inventario/ventas? | Migración de datos (estimación, sección 10) | Se necesita para diseñar el importador — pedir el archivo real al cliente antes de esa fase. |
+
+Recomendación: resolver la pregunta correspondiente justo antes de empezar cada módulo (no hace falta cerrarlas todas de una vez), salvo la 5 que conviene pedir cuanto antes porque depende del cliente y no de una decisión interna.
