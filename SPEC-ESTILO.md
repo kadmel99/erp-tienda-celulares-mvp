@@ -91,13 +91,15 @@ background:
 ```
 Textura sutil, nunca decorativa al punto de competir con el contenido.
 
-### 4.2 Paneles/tarjetas — "vidrio"
+### 4.2 Paneles/tarjetas — "vidrio flotante"
+Bisel + sombra reforzados a propósito (ver iteración con el cliente) para que la tarjeta se perciba flotando sobre el fondo de aluminio, no pegada a él:
 ```css
 background: var(--panel);
 border: 1px solid var(--line);
 border-radius: 14px;
-box-shadow: 0 1px 2px rgba(38,36,32,0.06), 0 6px 16px rgba(38,36,32,0.10);
+box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 2px 4px rgba(38,36,32,0.08), 0 16px 32px rgba(38,36,32,0.20);
 ```
+El `inset` superior simula el filo de vidrio; la sombra amplia (16px/32px) es la que da la sensación de flotar — a mayor blur y desplazamiento, más "altura" percibida sobre el fondo.
 
 ### 4.3 Controles hundidos (inputs, chips no seleccionados)
 ```css
