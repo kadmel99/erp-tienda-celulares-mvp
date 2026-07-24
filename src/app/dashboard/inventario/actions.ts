@@ -2,12 +2,22 @@
 
 import { getPrisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import type { ProductCategory, ProductCondition } from "@/generated/prisma/enums";
+import type { ProductCategory, ProductCondition, InventoryMovementType } from "@/generated/prisma/enums";
 
 function generateSku(categoria: string): string {
   const prefix = categoria.substring(0, 3).toUpperCase();
   const rand = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `${prefix}-${rand}`;
+}
+
+// Categorías con IMEI/serial propio: cada fila es una unidad física única, cantidad fija en 1.
+// El resto (forros, cargadores, vidrios, accesorios) se maneja por lote/cantidad.
+const CATEGORIAS_SERIALIZADAS = new Set(["IPHONE", "IPAD", "APPLE_WATCH", "AIRPODS"]);
+
+function resolveCantidad(categoria: string, rawCantidad: FormDataEntryValue | null): number {
+  if (CATEGORIAS_SERIALIZADAS.has(categoria)) return 1;
+  const n = Number(rawCantidad);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 1;
 }
 
 export async function createProduct(formData: FormData) {
@@ -28,6 +38,8 @@ export async function createProduct(formData: FormData) {
   const serial = (formData.get("serial") as string)?.trim() || null;
   const tieneGarantia = formData.get("tieneGarantia") === "on";
   const mesesGarantia = tieneGarantia ? Number(formData.get("mesesGarantia")) || null : null;
+  const cantidad = resolveCantidad(categoria, formData.get("cantidad"));
+  const userId = formData.get("userId") as string;
 
   if (!nombre || !categoria || !sucursalId || !costo || !precioVenta) {
     return { error: "Nombre, categor\u00eda, sucursal, costo y precio son obligatorios" };
@@ -35,7 +47,7 @@ export async function createProduct(formData: FormData) {
 
   try {
     const sku = generateSku(categoria);
-    await prisma.product.create({
+    const producto = await prisma.product.create({
       data: {
         sku,
         nombre,
@@ -52,8 +64,22 @@ export async function createProduct(formData: FormData) {
         serial,
         tieneGarantia,
         mesesGarantia,
+        cantidad,
       },
     });
+
+    if (userId) {
+      await prisma.inventoryMovement.create({
+        data: {
+          productId: producto.id,
+          tipo: "ENTRADA" as InventoryMovementType,
+          cantidad,
+          motivo: "Alta de inventario",
+          userId,
+        },
+      });
+    }
+
     revalidatePath("/dashboard/inventario");
     return { success: true };
   } catch (error: unknown) {
@@ -83,21 +109,43 @@ export async function updateProduct(id: string, formData: FormData) {
   const serial = (formData.get("serial") as string)?.trim() || null;
   const tieneGarantia = formData.get("tieneGarantia") === "on";
   const mesesGarantia = tieneGarantia ? Number(formData.get("mesesGarantia")) || null : null;
-  const disponible = formData.get("disponible") === "on";
+  const userId = formData.get("userId") as string;
 
   if (!nombre || !categoria || !costo || !precioVenta) {
     return { error: "Nombre, categor\u00eda, costo y precio son obligatorios" };
   }
 
   try {
+    const anterior = await prisma.product.findUnique({ where: { id }, select: { cantidad: true } });
+    // \u00cdtems serializados no exponen el campo de cantidad en el formulario \u2014 se conserva el valor actual.
+    const cantidad = CATEGORIAS_SERIALIZADAS.has(categoria)
+      ? (anterior?.cantidad ?? 1)
+      : resolveCantidad(categoria, formData.get("cantidad"));
+    const delta = cantidad - (anterior?.cantidad ?? cantidad);
+
     await prisma.product.update({
       where: { id },
       data: {
         nombre, categoria: categoria as ProductCategory, condicion: condicion as ProductCondition,
         costo, precioVenta, imei, marca, modelo, color, capacidad,
-        serial, tieneGarantia, mesesGarantia, disponible,
+        serial, tieneGarantia, mesesGarantia, cantidad,
+        disponible: cantidad > 0,
       },
     });
+
+    if (delta !== 0 && userId) {
+      await prisma.inventoryMovement.create({
+        data: {
+          productId: id,
+          tipo: (delta > 0 ? "ENTRADA" : "SALIDA") as InventoryMovementType,
+          cantidad: Math.abs(delta),
+          motivo: "Ajuste manual de inventario",
+          referenceType: "AJUSTE",
+          userId,
+        },
+      });
+    }
+
     revalidatePath("/dashboard/inventario");
     return { success: true };
   } catch {

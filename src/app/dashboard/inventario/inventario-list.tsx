@@ -12,6 +12,9 @@ const CATEGORIAS = [
 
 const CONDICIONES = ["NUEVO", "USADO", "REACONDICIONADO", "EXHIBICION"] as const;
 
+// Debe reflejar CATEGORIAS_SERIALIZADAS en actions.ts
+const CATEGORIAS_SERIALIZADAS = new Set(["IPHONE", "IPAD", "APPLE_WATCH", "AIRPODS"]);
+
 type Product = {
   id: string;
   sku: string;
@@ -28,6 +31,7 @@ type Product = {
   precioVenta: { toString: () => string };
   tieneGarantia: boolean;
   mesesGarantia: number | null;
+  cantidad: number;
   disponible: boolean;
   sucursalId: string;
   sucursal: { nombre: string } | null;
@@ -38,9 +42,10 @@ type Props = {
   sucursales: { id: string; nombre: string }[];
   isAdmin: boolean;
   userSucursalId: string | null;
+  userId: string;
 };
 
-export function InventarioList({ products, sucursales, isAdmin, userSucursalId }: Props) {
+export function InventarioList({ products, sucursales, isAdmin, userSucursalId, userId }: Props) {
   const [busqueda, setBusqueda] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("");
   const [filtroCondicion, setFiltroCondicion] = useState("");
@@ -111,6 +116,7 @@ export function InventarioList({ products, sucursales, isAdmin, userSucursalId }
               <th className="px-4 py-3">Categor&iacute;a</th>
               <th className="px-4 py-3">Condici&oacute;n</th>
               <th className="px-4 py-3">IMEI / SKU</th>
+              <th className="px-4 py-3">Cantidad</th>
               <th className="px-4 py-3">Precio venta</th>
               <th className="px-4 py-3">Sucursal</th>
               <th className="px-4 py-3">Acciones</th>
@@ -119,7 +125,7 @@ export function InventarioList({ products, sucursales, isAdmin, userSucursalId }
           <tbody>
             {filtrados.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-[var(--color-ink-faint)]">
+                <td colSpan={8} className="px-4 py-8 text-center text-[var(--color-ink-faint)]">
                   No se encontraron productos
                 </td>
               </tr>
@@ -148,6 +154,15 @@ export function InventarioList({ products, sucursales, isAdmin, userSucursalId }
                   {p.imei ? <>{p.imei}<br /></> : null}
                   {p.sku}
                 </td>
+                <td className="px-4 py-3 font-semibold" style={{ fontVariantNumeric: "tabular-nums" }}>
+                  {CATEGORIAS_SERIALIZADAS.has(p.categoria) ? (
+                    <span className="text-[var(--color-ink-faint)]">&mdash;</span>
+                  ) : (
+                    <span className={p.cantidad <= 3 ? "text-[var(--color-danger)]" : "text-[var(--color-ink)]"}>
+                      {p.cantidad}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3 font-semibold text-[var(--color-ink)]" style={{ fontVariantNumeric: "tabular-nums" }}>
                   ${Number(p.precioVenta).toLocaleString("es-CO")}
                 </td>
@@ -169,27 +184,29 @@ export function InventarioList({ products, sucursales, isAdmin, userSucursalId }
       </div>
 
       {creando && (
-        <ProductoFormModal title="Nuevo producto" sucursales={sucursales} isAdmin={isAdmin}
+        <ProductoFormModal title="Nuevo producto" sucursales={sucursales} isAdmin={isAdmin} userId={userId}
           defaultSucursalId={userSucursalId} onClose={() => setCreando(false)} />
       )}
       {editando && (
-        <ProductoFormModal key={editando.id} title="Editar producto" producto={editando}
+        <ProductoFormModal key={editando.id} title="Editar producto" producto={editando} userId={userId}
           sucursales={sucursales} isAdmin={isAdmin} defaultSucursalId={null} onClose={() => setEditando(null)} />
       )}
     </>
   );
 }
 
-function ProductoFormModal({ title, producto, sucursales, isAdmin, defaultSucursalId, onClose }: {
+function ProductoFormModal({ title, producto, sucursales, isAdmin, defaultSucursalId, userId, onClose }: {
   title: string;
   producto?: Product;
   sucursales: { id: string; nombre: string }[];
   isAdmin: boolean;
   defaultSucursalId: string | null;
+  userId: string;
   onClose: () => void;
 }) {
   const action = producto ? updateProduct.bind(null, producto.id) : createProduct;
   const [state, formAction, isPending] = useActionState(async (_prev: unknown, fd: FormData) => {
+    fd.set("userId", userId);
     const result = await action(fd);
     if (result && "success" in result && result.success) onClose();
     return result;
@@ -198,6 +215,7 @@ function ProductoFormModal({ title, producto, sucursales, isAdmin, defaultSucurs
   const error = state && "error" in state ? state.error : undefined;
   const [cat, setCat] = useState(producto?.categoria ?? "IPHONE");
   const [tieneGarantia, setTieneGarantia] = useState(producto?.tieneGarantia ?? false);
+  const esLote = !CATEGORIAS_SERIALIZADAS.has(cat);
 
   return (
     <Modal open title={title} onClose={onClose}>
@@ -281,6 +299,23 @@ function ProductoFormModal({ title, producto, sucursales, isAdmin, defaultSucurs
           </div>
         </div>
 
+        {esLote ? (
+          <div>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Cantidad en stock</label>
+            <input name="cantidad" type="number" min="0" step="1" required
+              defaultValue={producto ? producto.cantidad : 1}
+              className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
+              style={{ boxShadow: "var(--shadow-inset)" }} />
+            <p className="mt-1 text-xs text-[var(--color-ink-faint)]">
+              Se registran como una sola fila con esta cantidad disponible — no hace falta crear una fila por unidad.
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-[var(--color-ink-faint)]">
+            Esta categor&iacute;a se maneja por unidad (IMEI/serial). Cantidad fija en 1.
+          </p>
+        )}
+
         {isAdmin && (
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Sucursal</label>
@@ -306,8 +341,6 @@ function ProductoFormModal({ title, producto, sucursales, isAdmin, defaultSucurs
               style={{ boxShadow: "var(--shadow-inset)" }} />
           </div>
         )}
-
-        <input type="hidden" name="disponible" value={producto?.disponible !== false ? "on" : "off"} />
 
         {error && <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{error}</p>}
 

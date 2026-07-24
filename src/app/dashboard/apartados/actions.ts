@@ -22,6 +22,14 @@ export async function createApartado(formData: FormData) {
 
   try {
     await prisma.$transaction(async (tx) => {
+      const producto = await tx.product.findUniqueOrThrow({
+        where: { id: productId },
+        select: { cantidad: true },
+      });
+      if (producto.cantidad < 1) {
+        throw new Error("Sin stock disponible para apartar");
+      }
+
       const apartado = await tx.apartado.create({
         data: {
           sucursalId,
@@ -33,9 +41,25 @@ export async function createApartado(formData: FormData) {
         },
       });
 
+      // Un apartado reserva exactamente 1 unidad — descuenta del stock en vez de
+      // ocultar toda la fila, para que productos de lote (forros, cargadores, etc.)
+      // sigan mostrando el resto disponible.
+      const nuevaCantidad = producto.cantidad - 1;
       await tx.product.update({
         where: { id: productId },
-        data: { disponible: false },
+        data: { cantidad: nuevaCantidad, disponible: nuevaCantidad > 0 },
+      });
+
+      await tx.inventoryMovement.create({
+        data: {
+          productId,
+          tipo: "SALIDA",
+          cantidad: 1,
+          motivo: `Apartado #${apartado.id.slice(0, 8)}`,
+          referenceType: "APARTADO",
+          referenceId: apartado.id,
+          userId,
+        },
       });
 
       if (abonoInicial > 0) {
@@ -67,8 +91,8 @@ export async function createApartado(formData: FormData) {
 
     revalidatePath("/dashboard/apartados");
     return { success: true };
-  } catch {
-    return { error: "Error al crear el apartado" };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Error al crear el apartado" };
   }
 }
 

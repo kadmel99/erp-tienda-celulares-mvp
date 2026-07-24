@@ -85,7 +85,8 @@ model Product {
   tieneGarantia Boolean          @default(false) @map("tiene_garantia")
   mesesGarantia Int?             @map("meses_garantia")
   imageUrl      String?          @map("image_url")
-  disponible    Boolean          @default(true) // false mientras está apartado o ya vendido
+  cantidad      Int              @default(1) // stock disponible; ítems serializados (con IMEI) siempre valen 1
+  disponible    Boolean          @default(true) // false mientras está apartado o cantidad llega a 0
   createdAt     DateTime         @default(now()) @map("created_at")
 
   sucursalId  String   @map("sucursal_id")

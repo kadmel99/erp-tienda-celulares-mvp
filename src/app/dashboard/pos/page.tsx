@@ -26,7 +26,7 @@ export default async function PosPage() {
 
   const [products, clients, openSession] = await Promise.all([
     prisma.product.findMany({
-      where: { sucursalId: user.sucursalId, disponible: true },
+      where: { sucursalId: user.sucursalId, disponible: true, cantidad: { gt: 0 } },
       orderBy: { nombre: "asc" },
     }),
     prisma.cliente.findMany({ orderBy: { nombre: "asc" } }),

@@ -26,7 +26,7 @@ export default async function ApartadosPage() {
       },
     }),
     prisma.product.findMany({
-      where: { ...filter, disponible: true },
+      where: { ...filter, disponible: true, cantidad: { gt: 0 } },
       orderBy: { nombre: "asc" },
       select: { id: true, nombre: true, modelo: true, sku: true, precioVenta: true, sucursalId: true },
     }),

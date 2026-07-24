@@ -15,6 +15,7 @@ type Product = {
   capacidad: string | null;
   imei: string | null;
   condicion: string;
+  cantidad: number;
   precioVenta: { toString: () => string };
 };
 
@@ -29,7 +30,12 @@ type CartItem = {
   productId: string;
   nombre: string;
   price: number;
+  qty: number;
+  maxQty: number;
+  esLote: boolean;
 };
+
+const CATEGORIAS_SERIALIZADAS = new Set(["IPHONE", "IPAD", "APPLE_WATCH", "AIRPODS"]);
 
 type Props = {
   products: Product[];
@@ -75,15 +81,32 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
     });
   }, [products, busqueda, filtroCategoria]);
 
-  const totalCart = cart.reduce((s, i) => s + i.price, 0);
+  const totalCart = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
   function addToCart(p: Product) {
-    if (cart.some((i) => i.productId === p.id)) return;
+    const esLote = !CATEGORIAS_SERIALIZADAS.has(p.categoria);
+    const existente = cart.find((i) => i.productId === p.id);
+    if (existente) {
+      if (!esLote || existente.qty >= existente.maxQty) return;
+      setCart(cart.map((i) => i.productId === p.id ? { ...i, qty: i.qty + 1 } : i));
+      return;
+    }
     setCart([...cart, {
       productId: p.id,
       nombre: `${p.nombre}${p.modelo ? ` ${p.modelo}` : ""}${p.capacidad ? ` (${p.capacidad})` : ""}`,
       price: Number(p.precioVenta),
+      qty: 1,
+      maxQty: p.cantidad,
+      esLote,
     }]);
+  }
+
+  function changeQty(productId: string, delta: number) {
+    setCart(cart.map((i) => {
+      if (i.productId !== productId) return i;
+      const qty = Math.min(Math.max(i.qty + delta, 1), i.maxQty);
+      return { ...i, qty };
+    }));
   }
 
   function removeFromCart(productId: string) {
@@ -152,11 +175,16 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
 
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {filtrados.map((p) => (
+            {filtrados.map((p) => {
+              const esLote = !CATEGORIAS_SERIALIZADAS.has(p.categoria);
+              const enCarrito = cart.find((i) => i.productId === p.id);
+              const agotadoEnCarrito = !!enCarrito && (!esLote || enCarrito.qty >= enCarrito.maxQty);
+              return (
               <button
                 key={p.id}
                 onClick={() => addToCart(p)}
-                className="rounded-[12px] border border-[var(--color-line)] bg-[var(--color-panel)] p-3 text-left transition-all hover:border-[var(--color-accent)] hover:shadow-md"
+                disabled={agotadoEnCarrito}
+                className="rounded-[12px] border border-[var(--color-line)] bg-[var(--color-panel)] p-3 text-left transition-all hover:border-[var(--color-accent)] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                 style={{ boxShadow: "var(--shadow-panel)" }}
               >
                 <div className="mb-1 flex items-center gap-1.5">
@@ -168,6 +196,11 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
                       {p.condicion}
                     </span>
                   )}
+                  {esLote && (
+                    <span className="rounded-full bg-[var(--color-panel-raised)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-ink-soft)]">
+                      {p.cantidad} disp.
+                    </span>
+                  )}
                 </div>
                 <div className="text-sm font-semibold text-[var(--color-ink)]">{p.nombre}</div>
                 {p.modelo && <div className="text-xs text-[var(--color-ink-faint)]">{p.modelo}{p.capacidad ? ` (${p.capacidad})` : ""}</div>}
@@ -176,7 +209,8 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
                   ${Number(p.precioVenta).toLocaleString("es-CO")}
                 </div>
               </button>
-            ))}
+              );
+            })}
             {filtrados.length === 0 && (
               <div className="col-span-full py-12 text-center text-sm text-[var(--color-ink-faint)]">
                 No se encontraron productos
@@ -205,8 +239,25 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
             <div key={item.productId} className="mb-3 flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-[var(--color-ink)]">{item.nombre}</div>
-                <div className="text-xs font-semibold text-[var(--color-ink-soft)]" style={{ fontVariantNumeric: "tabular-nums" }}>
-                  ${item.price.toLocaleString("es-CO")}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-[var(--color-ink-soft)]" style={{ fontVariantNumeric: "tabular-nums" }}>
+                    ${(item.price * item.qty).toLocaleString("es-CO")}
+                  </span>
+                  {item.esLote && (
+                    <div className="flex items-center gap-1">
+                      <button type="button" onClick={() => changeQty(item.productId, -1)}
+                        className="flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-line)] text-xs text-[var(--color-ink-soft)] hover:bg-[var(--color-panel-raised)]">
+                        &minus;
+                      </button>
+                      <span className="w-5 text-center text-xs font-semibold text-[var(--color-ink)]" style={{ fontVariantNumeric: "tabular-nums" }}>
+                        {item.qty}
+                      </span>
+                      <button type="button" onClick={() => changeQty(item.productId, 1)} disabled={item.qty >= item.maxQty}
+                        className="flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-line)] text-xs text-[var(--color-ink-soft)] hover:bg-[var(--color-panel-raised)] disabled:opacity-40">
+                        +
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
               <button
@@ -284,9 +335,10 @@ function CheckoutModal({
   const [state, formAction, isPending] = useActionState(async (_prev: unknown, fd: FormData) => {
     fd.set("sucursalId", sucursalId);
     fd.set("userId", userId);
-    fd.set("items", JSON.stringify(cart.map((i) => ({ productId: i.productId, price: i.price }))));
+    fd.set("items", JSON.stringify(cart.map((i) => ({ productId: i.productId, price: i.price, qty: i.qty }))));
     fd.set("metodoPago", metodoPago);
     fd.set("clienteId", clienteId || "");
+    fd.set("total", String(total));
     const result = await createSale(fd);
     if (result && "success" in result && result.success) {
       onSuccess({ saleId: result.saleId as string, numero: result.numero as number });
@@ -312,8 +364,8 @@ function CheckoutModal({
           <div className="max-h-32 space-y-1 overflow-y-auto">
             {cart.map((i) => (
               <div key={i.productId} className="flex justify-between text-sm text-[var(--color-ink)]">
-                <span className="truncate">{i.nombre}</span>
-                <span style={{ fontVariantNumeric: "tabular-nums" }}>${i.price.toLocaleString("es-CO")}</span>
+                <span className="truncate">{i.nombre}{i.qty > 1 ? ` ×${i.qty}` : ""}</span>
+                <span style={{ fontVariantNumeric: "tabular-nums" }}>${(i.price * i.qty).toLocaleString("es-CO")}</span>
               </div>
             ))}
           </div>

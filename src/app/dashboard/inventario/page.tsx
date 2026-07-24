@@ -7,7 +7,7 @@ export default async function InventarioPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const user = session.user as { role: string; sucursalId: string | null };
+  const user = session.user as { id: string; role: string; sucursalId: string | null };
   const prisma = getPrisma();
   if (!prisma) return <p className="p-6 text-[var(--color-ink-soft)]">Error de conexi&oacute;n</p>;
 
@@ -25,7 +25,7 @@ export default async function InventarioPage() {
 
   return (
     <div className="p-6">
-      <InventarioList products={products} sucursales={sucursales} isAdmin={isAdmin} userSucursalId={user.sucursalId} />
+      <InventarioList products={products} sucursales={sucursales} isAdmin={isAdmin} userSucursalId={user.sucursalId} userId={user.id} />
     </div>
   );
 }

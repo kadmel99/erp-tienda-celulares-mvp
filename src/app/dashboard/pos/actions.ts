@@ -19,7 +19,7 @@ export async function createSale(formData: FormData) {
     return { error: "Datos incompletos" };
   }
 
-  const items = JSON.parse(itemsJson) as { productId: string; price: number }[];
+  const items = JSON.parse(itemsJson) as { productId: string; price: number; qty?: number }[];
 
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -34,21 +34,31 @@ export async function createSale(formData: FormData) {
             create: items.map((item) => ({
               productId: item.productId,
               precioUnit: item.price,
+              cantidad: item.qty && item.qty > 0 ? item.qty : 1,
             })),
           },
         },
       });
 
       for (const item of items) {
+        const qty = item.qty && item.qty > 0 ? item.qty : 1;
+        const producto = await tx.product.findUniqueOrThrow({
+          where: { id: item.productId },
+          select: { cantidad: true },
+        });
+        if (producto.cantidad < qty) {
+          throw new Error(`Stock insuficiente para ${item.productId}`);
+        }
+        const nuevaCantidad = producto.cantidad - qty;
         await tx.product.update({
           where: { id: item.productId },
-          data: { disponible: false },
+          data: { cantidad: nuevaCantidad, disponible: nuevaCantidad > 0 },
         });
         await tx.inventoryMovement.create({
           data: {
             productId: item.productId,
             tipo: "SALIDA" as InventoryMovementType,
-            cantidad: 1,
+            cantidad: qty,
             userId,
             referenceType: "sale",
             referenceId: sale.id,

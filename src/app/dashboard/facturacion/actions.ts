@@ -42,6 +42,7 @@ export async function getInvoicePDFUrl(invoiceId: string): Promise<string | { er
             items: invoice.sale.items.map((i) => ({
               product: i.product,
               precioUnit: Number(i.precioUnit),
+              cantidad: i.cantidad,
             })),
           },
         },

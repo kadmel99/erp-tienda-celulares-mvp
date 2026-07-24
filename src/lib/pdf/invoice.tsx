@@ -12,7 +12,8 @@ const styles = StyleSheet.create({
   table: { marginTop: 20 },
   tableHeader: { flexDirection: "row", borderBottom: "1 solid #CFCBC0", paddingBottom: 6, marginBottom: 6 },
   tableRow: { flexDirection: "row", paddingVertical: 4 },
-  col50: { width: "50%" },
+  col40: { width: "40%" },
+  col20: { width: "20%", textAlign: "right" },
   col25: { width: "25%", textAlign: "right" },
   totalRow: { flexDirection: "row", justifyContent: "flex-end", marginTop: 20, borderTop: "1 solid #CFCBC0", paddingTop: 8 },
   totalLabel: { marginRight: 40, fontWeight: "bold" },
@@ -29,7 +30,7 @@ export function InvoicePDF({ invoice }: {
       total: number;
       metodoPago: string;
       cliente?: { nombre: string; telefono?: string | null } | null;
-      items: { product: { nombre: string; modelo?: string | null; imei?: string | null }; precioUnit: number }[];
+      items: { product: { nombre: string; modelo?: string | null; imei?: string | null }; precioUnit: number; cantidad: number }[];
     };
   };
 }) {
@@ -62,18 +63,20 @@ export function InvoicePDF({ invoice }: {
 
         <View style={styles.table}>
           <View style={styles.tableHeader}>
-            <Text style={styles.col50}>Producto</Text>
-            <Text style={styles.col25}>Precio unit.</Text>
-            <Text style={[styles.col25, { width: "25%" }]}>Total</Text>
+            <Text style={styles.col40}>Producto</Text>
+            <Text style={styles.col20}>Cant.</Text>
+            <Text style={styles.col20}>Precio unit.</Text>
+            <Text style={styles.col20}>Total</Text>
           </View>
           {invoice.sale.items.map((item, i) => (
             <View key={i} style={styles.tableRow}>
-              <Text style={styles.col50}>
+              <Text style={styles.col40}>
                 {item.product.nombre}{item.product.modelo ? ` ${item.product.modelo}` : ""}
                 {item.product.imei ? `\nIMEI: ${item.product.imei}` : ""}
               </Text>
-              <Text style={styles.col25}>${Number(item.precioUnit).toLocaleString("es-CO")}</Text>
-              <Text style={[styles.col25, { width: "25%" }]}>${Number(item.precioUnit).toLocaleString("es-CO")}</Text>
+              <Text style={styles.col20}>{item.cantidad}</Text>
+              <Text style={styles.col20}>${Number(item.precioUnit).toLocaleString("es-CO")}</Text>
+              <Text style={styles.col20}>${(Number(item.precioUnit) * item.cantidad).toLocaleString("es-CO")}</Text>
             </View>
           ))}
         </View>
