@@ -33,3 +33,5 @@ next-env.d.ts
 
 # local postgres data
 /C:/Users/PALMA/PostgreSQL/data/
+
+.vercel
