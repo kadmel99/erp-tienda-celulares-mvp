@@ -30,3 +30,6 @@ next-env.d.ts
 
 # prisma (generated client)
 /src/generated
+
+# local postgres data
+/C:/Users/PALMA/PostgreSQL/data/
