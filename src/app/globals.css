@@ -99,3 +99,18 @@ body {
     var(--color-bg);
   color: var(--color-ink);
 }
+
+/* Botón primario con relieve físico (ver SPEC-ESTILO.md 4.4) — se hunde al presionarse */
+.btn-skeu-primary {
+  background: linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20, 101, 117, 0.35);
+  transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+}
+.btn-skeu-primary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 0 var(--color-accent-deep), 0 2px 6px rgba(20, 101, 117, 0.3);
+}
+.btn-skeu-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
