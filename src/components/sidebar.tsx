@@ -17,6 +17,7 @@ const adminNav: NavItem[] = [
   { label: "Caja", href: "/dashboard/caja" },
   { label: "Facturaci\u00f3n", href: "/dashboard/facturacion" },
   { label: "Garant\u00edas", href: "/dashboard/garantias" },
+  { label: "Auditor\u00eda", href: "/dashboard/auditoria" },
   { label: "Admin", href: "/admin" },
 ];
 
@@ -29,14 +30,23 @@ const operatorNav: NavItem[] = [
   { label: "Garant\u00edas", href: "/dashboard/garantias" },
 ];
 
+const fiscalNav: NavItem[] = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Inventario", href: "/dashboard/inventario" },
+  { label: "Caja", href: "/dashboard/caja" },
+  { label: "Apartados", href: "/dashboard/apartados" },
+  { label: "Facturaci\u00f3n", href: "/dashboard/facturacion" },
+  { label: "Auditor\u00eda", href: "/dashboard/auditoria" },
+];
+
 type SidebarProps = {
-  role: "ADMIN_GENERAL" | "OPERADOR";
+  role: "ADMIN_GENERAL" | "OPERADOR" | "REVISION_FISCAL";
   userName: string;
 };
 
 export default function Sidebar({ role, userName }: SidebarProps) {
   const pathname = usePathname();
-  const items = role === "ADMIN_GENERAL" ? adminNav : operatorNav;
+  const items = role === "ADMIN_GENERAL" ? adminNav : role === "REVISION_FISCAL" ? fiscalNav : operatorNav;
 
   return (
     <aside className="flex w-56 shrink-0 flex-col border-r border-[var(--color-line)] bg-[var(--color-panel)]">

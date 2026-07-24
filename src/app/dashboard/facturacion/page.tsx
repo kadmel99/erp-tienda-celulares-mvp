@@ -7,12 +7,13 @@ export default async function FacturacionPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const user = session.user as { role: string; sucursalId: string | null };
+  const user = session.user as { role: string; sucursalId: string | null; sucursalIds: string[] };
   const prisma = getPrisma();
   if (!prisma) return <p className="p-6 text-[var(--color-ink-soft)]">Error de conexi&oacute;n</p>;
 
   const isAdmin = user.role === "ADMIN_GENERAL";
-  const filter = isAdmin ? {} : { sucursalId: user.sucursalId ?? "" };
+  const isFiscal = user.role === "REVISION_FISCAL";
+  const filter = isAdmin ? {} : isFiscal ? { sucursalId: { in: user.sucursalIds } } : { sucursalId: user.sucursalId ?? "" };
 
   const invoices = await prisma.invoice.findMany({
     where: filter,
@@ -31,7 +32,7 @@ export default async function FacturacionPage() {
 
   return (
     <div className="p-6">
-      <FacturacionClient invoices={invoices} />
+      <FacturacionClient invoices={invoices} readOnly={isFiscal} />
     </div>
   );
 }

@@ -14,9 +14,9 @@ type Invoice = {
   sale: { total: { toString: () => string }; cliente: { nombre: string } | null };
 };
 
-type Props = { invoices: Invoice[] };
+type Props = { invoices: Invoice[]; readOnly?: boolean };
 
-export function FacturacionClient({ invoices }: Props) {
+export function FacturacionClient({ invoices, readOnly = false }: Props) {
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
 
@@ -101,10 +101,12 @@ export function FacturacionClient({ invoices }: Props) {
                     className="rounded-[8px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-3 py-1 text-xs font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]">
                     PDF
                   </button>
-                  <button onClick={() => handleSend(inv.id)} disabled={sendingId === inv.id}
-                    className="rounded-[8px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-3 py-1 text-xs font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] disabled:opacity-50">
-                    {sendingId === inv.id ? "Enviando\u2026" : inv.enviadaContadoraEn ? "Reenviar" : "Enviar"}
-                  </button>
+                  {!readOnly && (
+                    <button onClick={() => handleSend(inv.id)} disabled={sendingId === inv.id}
+                      className="rounded-[8px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-3 py-1 text-xs font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] disabled:opacity-50">
+                      {sendingId === inv.id ? "Enviando\u2026" : inv.enviadaContadoraEn ? "Reenviar" : "Enviar"}
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

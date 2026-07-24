@@ -6,13 +6,16 @@ import Link from "next/link";
 
 async function getKPIs(
   role: string,
-  sucursalId: string | null
+  sucursalId: string | null,
+  sucursalIds: string[]
 ) {
   const prisma = getPrisma();
   if (!prisma) return null;
 
-  const isAdmin = role === "ADMIN_GENERAL";
-  const filter = isAdmin ? {} : { sucursalId: sucursalId ?? "" };
+  const filter =
+    role === "ADMIN_GENERAL" ? {} :
+    role === "REVISION_FISCAL" ? { sucursalId: { in: sucursalIds } } :
+    { sucursalId: sucursalId ?? "" };
   const todayStart = startOfDay(new Date());
   const todayEnd = endOfDay(new Date());
   const monthStart = startOfDay(subDays(new Date(), 30));
@@ -24,6 +27,7 @@ async function getKPIs(
     apartadosActivos,
     sesionCaja,
     sucursales,
+    hallazgosAbiertos,
   ] = await Promise.all([
     prisma.sale.findMany({
       where: { ...filter, createdAt: { gte: todayStart, lte: todayEnd } },
@@ -48,6 +52,9 @@ async function getKPIs(
       where: { activa: true },
       select: { id: true, nombre: true },
     }),
+    prisma.hallazgo.count({
+      where: { ...filter, status: "ABIERTO" },
+    }),
   ]);
 
   const nombreSucursal =
@@ -64,6 +71,7 @@ async function getKPIs(
     sesionCajaAbierta: !!sesionCaja,
     nombreSucursal,
     sucursales,
+    hallazgosAbiertos,
   };
 }
 
@@ -111,11 +119,12 @@ export default async function DashboardPage() {
   if (!session?.user) redirect("/login");
 
   const user = session.user as {
-    role: "ADMIN_GENERAL" | "OPERADOR";
+    role: "ADMIN_GENERAL" | "OPERADOR" | "REVISION_FISCAL";
     sucursalId: string | null;
+    sucursalIds: string[];
   };
 
-  const kpis = await getKPIs(user.role, user.sucursalId);
+  const kpis = await getKPIs(user.role, user.sucursalId, user.sucursalIds);
 
   if (!kpis) {
     return (
@@ -163,6 +172,12 @@ export default async function DashboardPage() {
           label="Apartados activos"
           value={kpis.apartadosActivos.toLocaleString("es-CO")}
           href="/dashboard/apartados"
+        />
+        <KpiCard
+          label="Hallazgos abiertos"
+          value={kpis.hallazgosAbiertos.toLocaleString("es-CO")}
+          sub="Revisión fiscal"
+          href="/dashboard/auditoria"
         />
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { getPrisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireWriteAccess } from "@/lib/authz";
 import type { ProductCategory, ProductCondition, InventoryMovementType } from "@/generated/prisma/enums";
 
 function generateSku(categoria: string): string {
@@ -21,6 +22,9 @@ function resolveCantidad(categoria: string, rawCantidad: FormDataEntryValue | nu
 }
 
 export async function createProduct(formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 
@@ -93,6 +97,9 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(id: string, formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 
@@ -154,6 +161,9 @@ export async function updateProduct(id: string, formData: FormData) {
 }
 
 export async function toggleDisponible(id: string, disponible: boolean) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
   try {

@@ -2,9 +2,13 @@
 
 import { getPrisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireWriteAccess } from "@/lib/authz";
 import type { PaymentMethod, CashMovementType, ApartadoStatus } from "@/generated/prisma/enums";
 
 export async function createApartado(formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 
@@ -97,6 +101,9 @@ export async function createApartado(formData: FormData) {
 }
 
 export async function registrarAbono(formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 
@@ -183,6 +190,9 @@ export async function registrarAbono(formData: FormData) {
 }
 
 export async function registrarSeguimiento(formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 

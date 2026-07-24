@@ -7,12 +7,13 @@ export default async function ApartadosPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const user = session.user as { role: string; sucursalId: string | null; id: string };
+  const user = session.user as { role: string; sucursalId: string | null; sucursalIds: string[]; id: string };
   const prisma = getPrisma();
   if (!prisma) return <p className="p-6 text-[var(--color-ink-soft)]">Error de conexi&oacute;n</p>;
 
   const isAdmin = user.role === "ADMIN_GENERAL";
-  const filter = isAdmin ? {} : { sucursalId: user.sucursalId ?? "" };
+  const isFiscal = user.role === "REVISION_FISCAL";
+  const filter = isAdmin ? {} : isFiscal ? { sucursalId: { in: user.sucursalIds } } : { sucursalId: user.sucursalId ?? "" };
 
   const [apartados, productos, clientes] = await Promise.all([
     prisma.apartado.findMany({
@@ -43,6 +44,7 @@ export default async function ApartadosPage() {
         clientes={clientes}
         sucursalId={sucursalId}
         userId={user.id}
+        readOnly={isFiscal}
       />
     </div>
   );

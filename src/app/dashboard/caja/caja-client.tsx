@@ -30,6 +30,7 @@ type Props = {
   sucursalId: string;
   userId: string;
   userName: string;
+  readOnly?: boolean;
 };
 
 const TIPOS_MOVIMIENTO = [
@@ -46,7 +47,7 @@ const tipoStyles: Record<string, string> = {
   OTRO: "bg-[var(--color-panel-raised)] text-[var(--color-ink-soft)]",
 };
 
-export function CajaClient({ openSession, closedSessions, sucursalId, userId, userName }: Props) {
+export function CajaClient({ openSession, closedSessions, sucursalId, userId, userName, readOnly = false }: Props) {
   const [showAbrir, setShowAbrir] = useState(false);
   const [showCerrar, setShowCerrar] = useState(false);
   const [showMovimiento, setShowMovimiento] = useState(false);
@@ -55,33 +56,35 @@ export function CajaClient({ openSession, closedSessions, sucursalId, userId, us
     <>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-lg font-semibold text-[var(--color-ink)]">Caja</h1>
-        <div className="flex gap-2">
-          {!openSession ? (
-            <button onClick={() => setShowAbrir(true)}
-              className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
-              style={{
-                background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-              }}>
-              Abrir caja
-            </button>
-          ) : (
-            <>
-              <button onClick={() => setShowMovimiento(true)}
-                className="rounded-[12px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-4 py-2 text-sm font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]">
-                + Movimiento
-              </button>
-              <button onClick={() => setShowCerrar(true)}
+        {!readOnly && (
+          <div className="flex gap-2">
+            {!openSession ? (
+              <button onClick={() => setShowAbrir(true)}
                 className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
                 style={{
-                  background: "linear-gradient(180deg, var(--color-danger), #8C3F2E)",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 3px 0 #6B2F22, 0 6px 14px rgba(133,67,52,0.35)",
+                  background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
                 }}>
-                Cerrar caja
+                Abrir caja
               </button>
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                <button onClick={() => setShowMovimiento(true)}
+                  className="rounded-[12px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-4 py-2 text-sm font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]">
+                  + Movimiento
+                </button>
+                <button onClick={() => setShowCerrar(true)}
+                  className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
+                  style={{
+                    background: "linear-gradient(180deg, var(--color-danger), #8C3F2E)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 3px 0 #6B2F22, 0 6px 14px rgba(133,67,52,0.35)",
+                  }}>
+                  Cerrar caja
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {openSession && <SessionCard session={openSession} userName={userName} />}

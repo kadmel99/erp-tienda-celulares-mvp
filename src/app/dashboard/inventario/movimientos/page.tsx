@@ -7,7 +7,7 @@ export default async function MovimientosPage(props: { searchParams?: Promise<{ 
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const user = session.user as { role: string; sucursalId: string | null; id: string };
+  const user = session.user as { role: string; sucursalId: string | null; sucursalIds: string[]; id: string };
   const prisma = getPrisma();
   if (!prisma) return <p className="p-6 text-[var(--color-ink-soft)]">Error de conexi&oacute;n</p>;
 
@@ -15,7 +15,8 @@ export default async function MovimientosPage(props: { searchParams?: Promise<{ 
   const productoId = searchParams?.productoId;
 
   const isAdmin = user.role === "ADMIN_GENERAL";
-  const sucursalFilter = isAdmin ? {} : { sucursalId: user.sucursalId ?? "" };
+  const isFiscal = user.role === "REVISION_FISCAL";
+  const sucursalFilter = isAdmin ? {} : isFiscal ? { sucursalId: { in: user.sucursalIds } } : { sucursalId: user.sucursalId ?? "" };
 
   const filter: Record<string, unknown> = {};
   if (productoId) filter.productId = productoId;
@@ -42,7 +43,7 @@ export default async function MovimientosPage(props: { searchParams?: Promise<{ 
   return (
     <div className="p-6">
       <MovimientosList movements={movements} products={products} userId={user.id}
-        productoSeleccionado={productoSeleccionado ?? null} />
+        productoSeleccionado={productoSeleccionado ?? null} readOnly={isFiscal} />
     </div>
   );
 }

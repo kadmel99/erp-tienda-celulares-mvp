@@ -22,6 +22,7 @@ type Props = {
   clientes: Cliente[];
   sucursalId: string;
   userId: string;
+  readOnly?: boolean;
 };
 
 const METODOS_PAGO = [
@@ -30,7 +31,7 @@ const METODOS_PAGO = [
   { value: "TARJETA", label: "Tarjeta" },
 ] as const;
 
-export function ApartadosClient({ apartados, productos, clientes, sucursalId, userId }: Props) {
+export function ApartadosClient({ apartados, productos, clientes, sucursalId, userId, readOnly = false }: Props) {
   const [tab, setTab] = useState<"activos" | "cartera">("activos");
   const [showCrear, setShowCrear] = useState(false);
   const [showAbono, setShowAbono] = useState<Apartado | null>(null);
@@ -58,14 +59,16 @@ export function ApartadosClient({ apartados, productos, clientes, sucursalId, us
             </button>
           </div>
         </div>
-        <button onClick={() => setShowCrear(true)}
-          className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}>
-          Nuevo apartado
-        </button>
+        {!readOnly && (
+          <button onClick={() => setShowCrear(true)}
+            className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
+            style={{
+              background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
+            }}>
+            Nuevo apartado
+          </button>
+        )}
       </div>
 
       <div className="space-y-3">
@@ -104,7 +107,7 @@ export function ApartadosClient({ apartados, productos, clientes, sucursalId, us
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  {a.status === "ACTIVO" && Number(a.saldoPendiente) > 0 && (
+                  {!readOnly && a.status === "ACTIVO" && Number(a.saldoPendiente) > 0 && (
                     <button onClick={() => setShowAbono(a)}
                       className="rounded-[8px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-3 py-1.5 text-xs font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]">
                       Abono
@@ -119,12 +122,14 @@ export function ApartadosClient({ apartados, productos, clientes, sucursalId, us
 
               {showDetail?.id === a.id && (
                 <div className="mt-4 border-t border-[var(--color-line)] pt-4">
-                  <div className="mb-3 flex gap-2">
-                    <button onClick={() => { setShowSeguimiento(a); setShowDetail(null); }}
-                      className="rounded-[8px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-3 py-1.5 text-xs font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]">
-                      + Seguimiento
-                    </button>
-                  </div>
+                  {!readOnly && (
+                    <div className="mb-3 flex gap-2">
+                      <button onClick={() => { setShowSeguimiento(a); setShowDetail(null); }}
+                        className="rounded-[8px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-3 py-1.5 text-xs font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]">
+                        + Seguimiento
+                      </button>
+                    </div>
+                  )}
                   {a.abonos.length > 0 && (
                     <div className="mb-3">
                       <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Abonos</p>

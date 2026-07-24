@@ -19,9 +19,10 @@ type Props = {
   products: { id: string; nombre: string; sku: string }[];
   userId: string;
   productoSeleccionado: { id: string; nombre: string; sku: string } | null;
+  readOnly?: boolean;
 };
 
-export function MovimientosList({ movements, products, userId, productoSeleccionado }: Props) {
+export function MovimientosList({ movements, products, userId, productoSeleccionado, readOnly = false }: Props) {
   const [creando, setCreando] = useState(false);
 
   const tipoStyles: Record<string, string> = {
@@ -42,16 +43,18 @@ export function MovimientosList({ movements, products, userId, productoSeleccion
             </p>
           )}
         </div>
-        <button
-          onClick={() => setCreando(true)}
-          className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}
-        >
-          Nuevo movimiento
-        </button>
+        {!readOnly && (
+          <button
+            onClick={() => setCreando(true)}
+            className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
+            style={{
+              background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
+            }}
+          >
+            Nuevo movimiento
+          </button>
+        )}
       </div>
 
       <div className="overflow-hidden rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)]"

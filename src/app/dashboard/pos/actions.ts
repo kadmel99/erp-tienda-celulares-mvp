@@ -2,9 +2,13 @@
 
 import { getPrisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireWriteAccess } from "@/lib/authz";
 import type { PaymentMethod, CashMovementType, InventoryMovementType } from "@/generated/prisma/enums";
 
 export async function createSale(formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 
@@ -128,6 +132,9 @@ export async function searchClients(query: string) {
 }
 
 export async function createClient(formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 

@@ -12,6 +12,7 @@ type Usuario = {
   sucursalId: string | null;
   activo: boolean;
   sucursal: { nombre: string } | null;
+  sucursalesAsignadas: { sucursal: { id: string; nombre: string } }[];
 };
 
 type Sucursal = {
@@ -76,10 +77,16 @@ export function UsuariosList({
                 <td className="px-4 py-3 text-[var(--color-ink-soft)]">{u.email}</td>
                 <td className="px-4 py-3">
                   <span className="rounded-full bg-[var(--color-accent-soft)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-accent-deep)]">
-                    {u.rol === "ADMIN_GENERAL" ? "Admin" : "Operador"}
+                    {u.rol === "ADMIN_GENERAL" ? "Admin" : u.rol === "REVISION_FISCAL" ? "Revisi\u00f3n Fiscal" : "Operador"}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-[var(--color-ink-soft)]">{u.sucursal?.nombre ?? "\u2014"}</td>
+                <td className="px-4 py-3 text-[var(--color-ink-soft)]">
+                  {u.rol === "REVISION_FISCAL"
+                    ? (u.sucursalesAsignadas.length > 0
+                        ? u.sucursalesAsignadas.map((sa) => sa.sucursal.nombre).join(", ")
+                        : "\u2014")
+                    : (u.sucursal?.nombre ?? "\u2014")}
+                </td>
                 <td className="px-4 py-3">
                   <span
                     className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -213,9 +220,37 @@ function UsuarioFormModal({
             style={{ boxShadow: "var(--shadow-inset)" }}
           >
             <option value="OPERADOR">Operador</option>
+            <option value="REVISION_FISCAL">Revisión Fiscal</option>
             <option value="ADMIN_GENERAL">Administrador General</option>
           </select>
         </div>
+        {rol === "REVISION_FISCAL" && (
+          <div>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">
+              Sucursales asignadas
+            </label>
+            <div
+              className="flex max-h-40 flex-col gap-1.5 overflow-y-auto rounded-[10px] bg-[var(--color-panel-raised)] p-3"
+              style={{ boxShadow: "var(--shadow-inset)" }}
+            >
+              {sucursales.map((s) => (
+                <label key={s.id} className="flex items-center gap-2 text-sm text-[var(--color-ink)]">
+                  <input
+                    type="checkbox"
+                    name="sucursalIds"
+                    value={s.id}
+                    defaultChecked={usuario?.sucursalesAsignadas?.some((sa) => sa.sucursal.id === s.id) ?? false}
+                    className="rounded border-[var(--color-line-strong)] text-[var(--color-accent)]"
+                  />
+                  {s.nombre}
+                </label>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-[var(--color-ink-faint)]">
+              Solo verá información de las sucursales marcadas — puede seleccionar varias.
+            </p>
+          </div>
+        )}
         {rol === "OPERADOR" && (
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">

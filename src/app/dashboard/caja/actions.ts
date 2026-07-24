@@ -2,9 +2,13 @@
 
 import { getPrisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireWriteAccess } from "@/lib/authz";
 import type { CashMovementType } from "@/generated/prisma/enums";
 
 export async function abrirCaja(formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 
@@ -35,6 +39,9 @@ export async function abrirCaja(formData: FormData) {
 }
 
 export async function cerrarCaja(sessionId: string, formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 
@@ -80,6 +87,9 @@ export async function cerrarCaja(sessionId: string, formData: FormData) {
 }
 
 export async function registrarMovimiento(formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 

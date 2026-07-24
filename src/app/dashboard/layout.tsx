@@ -13,8 +13,9 @@ export default async function DashboardLayout({
 
   const user = session.user as {
     id: string;
-    role: "ADMIN_GENERAL" | "OPERADOR";
+    role: "ADMIN_GENERAL" | "OPERADOR" | "REVISION_FISCAL";
     sucursalId: string | null;
+    sucursalIds: string[];
   };
 
   const prisma = getPrisma();
@@ -27,6 +28,15 @@ export default async function DashboardLayout({
     });
     if (sucursal) {
       userName = `${userName} — ${sucursal.nombre}`;
+    }
+  } else if (prisma && user.role === "REVISION_FISCAL" && user.sucursalIds.length > 0) {
+    const sucursales = await prisma.sucursal.findMany({
+      where: { id: { in: user.sucursalIds } },
+      select: { nombre: true },
+      orderBy: { nombre: "asc" },
+    });
+    if (sucursales.length > 0) {
+      userName = `${userName} — ${sucursales.map((s) => s.nombre).join(", ")}`;
     }
   }
 

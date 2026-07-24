@@ -5,6 +5,7 @@ type SessionUser = {
   id: string;
   role: UserRole;
   sucursalId: string | null;
+  sucursalIds: string[];
 };
 
 export const authConfig = {
@@ -43,6 +44,7 @@ export const authConfig = {
         token.id = u.id;
         token.role = u.role;
         token.sucursalId = u.sucursalId;
+        token.sucursalIds = u.sucursalIds;
       }
       return token;
     },
@@ -51,6 +53,7 @@ export const authConfig = {
         session.user.id = token.id as string;
         session.user.role = token.role as UserRole;
         session.user.sucursalId = (token.sucursalId as string | null) ?? null;
+        session.user.sucursalIds = (token.sucursalIds as string[] | undefined) ?? [];
       }
       return session;
     },

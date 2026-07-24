@@ -2,9 +2,13 @@
 
 import { getPrisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireWriteAccess } from "@/lib/authz";
 import type { InventoryMovementType } from "@/generated/prisma/enums";
 
 export async function createMovement(formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 

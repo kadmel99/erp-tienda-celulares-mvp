@@ -25,12 +25,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const isValid = await bcrypt.compare(password, usuario.passwordHash);
         if (!isValid) return null;
 
+        let sucursalIds: string[] = [];
+        if (usuario.rol === "REVISION_FISCAL") {
+          const asignaciones = await prisma.usuarioSucursal.findMany({
+            where: { usuarioId: usuario.id },
+            select: { sucursalId: true },
+          });
+          sucursalIds = asignaciones.map((a) => a.sucursalId);
+        }
+
         return {
           id: usuario.id,
           email: usuario.email,
           name: usuario.nombre,
           role: usuario.rol,
           sucursalId: usuario.sucursalId,
+          sucursalIds,
         };
       },
     }),

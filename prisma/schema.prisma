@@ -12,6 +12,7 @@ datasource db {
 enum UserRole {
   ADMIN_GENERAL
   OPERADOR
+  REVISION_FISCAL
 }
 
 model Sucursal {
@@ -22,13 +23,15 @@ model Sucursal {
   activa    Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
 
-  usuarios    Usuario[]
-  productos   Product[]
-  ventas      Sale[]
-  apartados   Apartado[]
-  cajas       CashRegisterSession[]
-  facturas    Invoice[]
-  prospectos  Prospecto[]
+  usuarios          Usuario[]
+  productos         Product[]
+  ventas            Sale[]
+  apartados         Apartado[]
+  cajas             CashRegisterSession[]
+  facturas          Invoice[]
+  prospectos        Prospecto[]
+  usuariosAsignados UsuarioSucursal[]
+  hallazgos         Hallazgo[]
 
   @@map("sucursales")
 }
@@ -44,8 +47,24 @@ model Usuario {
   activo       Boolean  @default(true)
   createdAt    DateTime @default(now()) @map("created_at")
 
+  sucursalesAsignadas UsuarioSucursal[]
+
   @@index([sucursalId])
   @@map("usuarios")
+}
+
+// Asignación de sucursales para el rol REVISION_FISCAL (puede tener varias).
+// Los demás roles siguen usando Usuario.sucursalId (relación única).
+model UsuarioSucursal {
+  id         String   @id @default(cuid())
+  usuarioId  String   @map("usuario_id")
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+  sucursalId String   @map("sucursal_id")
+  sucursal   Sucursal @relation(fields: [sucursalId], references: [id])
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([usuarioId, sucursalId])
+  @@map("usuario_sucursales")
 }
 
 // ── Inventario ───────────────────────────────────────────────────
@@ -361,4 +380,42 @@ model Warranty {
   updatedAt   DateTime       @updatedAt @map("updated_at")
 
   @@map("warranties")
+}
+
+// ── Auditoría / Revisión fiscal ───────────────────────────────────
+
+enum HallazgoTipo {
+  INVENTARIO
+  CAJA
+  VENTAS
+  OTRO
+}
+
+enum HallazgoSeveridad {
+  BAJA
+  MEDIA
+  ALTA
+}
+
+enum HallazgoStatus {
+  ABIERTO
+  RESUELTO
+}
+
+model Hallazgo {
+  id          String            @id @default(cuid())
+  sucursalId  String            @map("sucursal_id")
+  sucursal    Sucursal          @relation(fields: [sucursalId], references: [id])
+  tipo        HallazgoTipo
+  severidad   HallazgoSeveridad @default(MEDIA)
+  titulo      String
+  descripcion String
+  status      HallazgoStatus    @default(ABIERTO)
+  userId      String            @map("user_id")
+  resolvedAt  DateTime?         @map("resolved_at")
+  resolvedBy  String?           @map("resolved_by")
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  @@index([sucursalId, status])
+  @@map("hallazgos")
 }

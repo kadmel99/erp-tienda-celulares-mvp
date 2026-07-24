@@ -6,6 +6,7 @@ import React from "react";
 import { renderToStream } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/lib/pdf/invoice";
 import nodemailer from "nodemailer";
+import { requireWriteAccess } from "@/lib/authz";
 
 export async function getInvoicePDFUrl(invoiceId: string): Promise<string | { error: string }> {
   const prisma = getPrisma();
@@ -72,6 +73,9 @@ export async function getInvoicePDFUrl(invoiceId: string): Promise<string | { er
 }
 
 export async function enviarFacturaEmail(invoiceId: string) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
   const prisma = getPrisma();
   if (!prisma) return { error: "Error de conexi\u00f3n" };
 
