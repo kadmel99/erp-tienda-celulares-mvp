@@ -19,6 +19,15 @@ export default async function DashboardLayout({
   };
 
   const prisma = getPrisma();
+
+  if (prisma) {
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: user.id },
+      select: { debeCambiarPassword: true },
+    });
+    if (usuario?.debeCambiarPassword) redirect("/cambiar-password");
+  }
+
   let userName = session.user.name ?? session.user.email ?? "Usuario";
 
   if (prisma && user.sucursalId) {

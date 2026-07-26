@@ -36,6 +36,7 @@ export async function createUsuario(formData: FormData) {
         passwordHash,
         rol: rol as "ADMIN_GENERAL" | "OPERADOR" | "REVISION_FISCAL",
         sucursalId: rol === "OPERADOR" ? sucursalId : null,
+        debeCambiarPassword: true,
       },
     });
 
@@ -92,6 +93,7 @@ export async function updateUsuario(id: string, formData: FormData) {
     };
     if (password) {
       data.passwordHash = await bcrypt.hash(password, 10);
+      data.debeCambiarPassword = true;
     }
     await prisma.$transaction(async (tx) => {
       await tx.usuario.update({ where: { id }, data });

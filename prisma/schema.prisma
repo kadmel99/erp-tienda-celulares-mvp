@@ -37,15 +37,16 @@ model Sucursal {
 }
 
 model Usuario {
-  id           String   @id @default(cuid())
-  nombre       String
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  rol          UserRole
-  sucursalId   String?  @map("sucursal_id")
-  sucursal     Sucursal? @relation(fields: [sucursalId], references: [id])
-  activo       Boolean  @default(true)
-  createdAt    DateTime @default(now()) @map("created_at")
+  id                  String   @id @default(cuid())
+  nombre              String
+  email               String   @unique
+  passwordHash        String   @map("password_hash")
+  rol                 UserRole
+  sucursalId          String?  @map("sucursal_id")
+  sucursal            Sucursal? @relation(fields: [sucursalId], references: [id])
+  activo              Boolean  @default(true)
+  debeCambiarPassword Boolean  @default(false) @map("debe_cambiar_password")
+  createdAt           DateTime @default(now()) @map("created_at")
 
   sucursalesAsignadas UsuarioSucursal[]
 

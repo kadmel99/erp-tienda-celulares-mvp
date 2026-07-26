@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { getPrisma } from "@/lib/prisma";
 import Link from "next/link";
 
 export default async function AdminLayout({
@@ -10,8 +11,17 @@ export default async function AdminLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const user = session.user as { role: string };
+  const user = session.user as { id: string; role: string };
   if (user.role !== "ADMIN_GENERAL") redirect("/dashboard");
+
+  const prisma = getPrisma();
+  if (prisma) {
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: user.id },
+      select: { debeCambiarPassword: true },
+    });
+    if (usuario?.debeCambiarPassword) redirect("/cambiar-password");
+  }
 
   return (
     <div>
