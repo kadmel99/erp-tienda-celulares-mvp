@@ -4,6 +4,7 @@ import { useActionState, useMemo, useState } from "react";
 import Modal from "@/components/modal";
 import { createSale } from "./actions";
 import { getInvoicePDFUrl } from "../facturacion/actions";
+import { updateCliente } from "../clientes/actions";
 import { NewClientModal } from "@/components/new-client-modal";
 import { formatCOP } from "@/lib/money";
 
@@ -27,6 +28,9 @@ type Cliente = {
   nombre: string;
   telefono: string | null;
   correo: string | null;
+  cedula: string | null;
+  direccion: string | null;
+  ciudad: string | null;
 };
 
 type CartItem = {
@@ -67,10 +71,19 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
   const [showCheckout, setShowCheckout] = useState(false);
   const [metodoPago, setMetodoPago] = useState("EFECTIVO");
   const [clienteId, setClienteId] = useState("");
+  const [clientsList, setClientsList] = useState(clients);
   const [showSuccess, setShowSuccess] = useState<{ saleId: string; numero: number; invoiceId: string } | null>(null);
   const [showNewClient, setShowNewClient] = useState(false);
   const [verFacturaLoading, setVerFacturaLoading] = useState(false);
   const [verFacturaError, setVerFacturaError] = useState<string | null>(null);
+
+  function upsertCliente(c: Cliente) {
+    setClientsList((prev) => {
+      const exists = prev.some((x) => x.id === c.id);
+      const next = exists ? prev.map((x) => (x.id === c.id ? { ...x, ...c } : x)) : [...prev, c];
+      return next.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    });
+  }
 
   async function handleVerFactura() {
     if (!showSuccess) return;
@@ -326,7 +339,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
         <CheckoutModal
           cart={cart}
           total={totalCart}
-          clients={clients}
+          clients={clientsList}
           sucursalId={sucursalId}
           userId={userId}
           metodoPago={metodoPago}
@@ -337,6 +350,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
           onSuccess={(result) => setShowSuccess(result)}
           showNewClient={showNewClient}
           setShowNewClient={setShowNewClient}
+          onClienteUpsert={upsertCliente}
         />
       )}
     </div>
@@ -346,7 +360,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
 function CheckoutModal({
   cart, total, clients, sucursalId, userId,
   metodoPago, setMetodoPago, clienteId, setClienteId,
-  onClose, onSuccess, showNewClient, setShowNewClient,
+  onClose, onSuccess, showNewClient, setShowNewClient, onClienteUpsert,
 }: {
   cart: CartItem[];
   total: number;
@@ -361,6 +375,7 @@ function CheckoutModal({
   onSuccess: (result: { saleId: string; numero: number; invoiceId: string }) => void;
   showNewClient: boolean;
   setShowNewClient: (v: boolean) => void;
+  onClienteUpsert: (c: Cliente) => void;
 }) {
   const [state, formAction, isPending] = useActionState(async (_prev: unknown, fd: FormData) => {
     fd.set("sucursalId", sucursalId);
@@ -380,9 +395,14 @@ function CheckoutModal({
 
   if (showNewClient) {
     return (
-      <NewClientModal onClose={() => setShowNewClient(false)} onCreated={(c) => { setClienteId(c.id); setShowNewClient(false); }} />
+      <NewClientModal
+        onClose={() => setShowNewClient(false)}
+        onCreated={(c) => { onClienteUpsert(c as Cliente); setClienteId(c.id); setShowNewClient(false); }}
+      />
     );
   }
+
+  const selectedCliente = clients.find((c) => c.id === clienteId);
 
   return (
     <Modal open title="Confirmar venta" onClose={onClose}>
@@ -444,6 +464,9 @@ function CheckoutModal({
               + Nuevo
             </button>
           </div>
+          {selectedCliente && (
+            <ClienteDatosIncompletos cliente={selectedCliente} onSaved={onClienteUpsert} />
+          )}
         </div>
 
         {error && (
@@ -468,5 +491,100 @@ function CheckoutModal({
         </div>
       </form>
     </Modal>
+  );
+}
+
+function ClienteDatosIncompletos({ cliente, onSaved }: { cliente: Cliente; onSaved: (c: Cliente) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [cedula, setCedula] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const faltantes: string[] = [];
+  if (!cliente.cedula) faltantes.push("c\u00e9dula");
+  if (!cliente.correo) faltantes.push("correo");
+  if (!cliente.direccion) faltantes.push("direcci\u00f3n");
+
+  if (faltantes.length === 0) return null;
+
+  async function handleGuardar() {
+    setIsPending(true);
+    setError(null);
+    const fd = new FormData();
+    fd.set("nombre", cliente.nombre);
+    fd.set("telefono", cliente.telefono ?? "");
+    fd.set("ciudad", cliente.ciudad ?? "");
+    fd.set("cedula", cliente.cedula ?? cedula);
+    fd.set("correo", cliente.correo ?? correo);
+    fd.set("direccion", cliente.direccion ?? direccion);
+    const result = await updateCliente(cliente.id, fd);
+    setIsPending(false);
+    if (result && "success" in result && result.success) {
+      onSaved({
+        ...cliente,
+        cedula: cliente.cedula || cedula || null,
+        correo: cliente.correo || correo || null,
+        direccion: cliente.direccion || direccion || null,
+      });
+      setEditing(false);
+    } else if (result && "error" in result) {
+      setError(result.error);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <div className="mt-2 flex items-center justify-between gap-2 rounded-[8px] bg-[var(--color-panel-raised)] px-3 py-2">
+        <span className="text-xs text-[var(--color-ink-faint)]">
+          Faltan datos de este cliente: {faltantes.join(", ")}
+        </span>
+        <button type="button" onClick={() => setEditing(true)}
+          className="shrink-0 text-xs font-semibold text-[var(--color-accent-deep)] hover:underline"
+        >
+          Completar
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 rounded-[10px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] p-3">
+      <p className="mb-2 text-xs text-[var(--color-ink-faint)]">
+        Opcional \u2014 si el cliente no quiere darlos, d\u00e9jalos en blanco.
+      </p>
+      <div className="flex flex-col gap-2">
+        {!cliente.cedula && (
+          <input value={cedula} onChange={(e) => setCedula(e.target.value)} placeholder="C\u00e9dula"
+            className="w-full rounded-[8px] border-none bg-[var(--color-panel)] px-3 py-1.5 text-sm text-[var(--color-ink)] outline-none"
+            style={{ boxShadow: "var(--shadow-inset)" }} />
+        )}
+        {!cliente.correo && (
+          <input value={correo} onChange={(e) => setCorreo(e.target.value)} type="email" placeholder="Correo"
+            className="w-full rounded-[8px] border-none bg-[var(--color-panel)] px-3 py-1.5 text-sm text-[var(--color-ink)] outline-none"
+            style={{ boxShadow: "var(--shadow-inset)" }} />
+        )}
+        {!cliente.direccion && (
+          <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Direcci\u00f3n"
+            className="w-full rounded-[8px] border-none bg-[var(--color-panel)] px-3 py-1.5 text-sm text-[var(--color-ink)] outline-none"
+            style={{ boxShadow: "var(--shadow-inset)" }} />
+        )}
+        {error && <p className="text-xs text-[var(--color-danger)]">{error}</p>}
+        <div className="flex gap-2">
+          <button type="button" onClick={() => setEditing(false)}
+            className="flex-1 rounded-[8px] border border-[var(--color-line)] bg-[var(--color-panel)] py-1.5 text-xs font-medium text-[var(--color-ink-soft)]"
+          >
+            Omitir
+          </button>
+          <button type="button" onClick={handleGuardar} disabled={isPending}
+            className="flex-1 rounded-[8px] border-none py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+            style={{ background: "var(--color-accent)" }}
+          >
+            {isPending ? "Guardando\u2026" : "Guardar"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
