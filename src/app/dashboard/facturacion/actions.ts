@@ -7,6 +7,7 @@ import { renderToStream } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/lib/pdf/invoice";
 import nodemailer from "nodemailer";
 import { requireWriteAccess } from "@/lib/authz";
+import { formatCOP } from "@/lib/money";
 
 export async function getInvoicePDFUrl(invoiceId: string): Promise<string | { error: string }> {
   const prisma = getPrisma();
@@ -128,7 +129,7 @@ export async function enviarFacturaEmail(invoiceId: string) {
         <h2>Factura #${invoice.numero}</h2>
         <p><strong>Sucursal:</strong> ${invoice.sucursal.nombre}</p>
         <p><strong>Fecha:</strong> ${invoice.createdAt.toLocaleDateString("es-CO")}</p>
-        <p><strong>Total:</strong> $${Number(invoice.sale.total).toLocaleString("es-CO")}</p>
+        <p><strong>Total:</strong> ${formatCOP(invoice.sale.total)}</p>
         <h3>Productos:</h3>
         <ul>${itemsHtml}</ul>
         <p>El PDF de la factura se adjunta a este correo.</p>

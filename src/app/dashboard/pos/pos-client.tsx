@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useState } from "react";
 import Modal from "@/components/modal";
 import { createSale, createClient } from "./actions";
+import { formatCOP } from "@/lib/money";
 
 type Product = {
   id: string;
@@ -206,7 +207,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
                 {p.modelo && <div className="text-xs text-[var(--color-ink-faint)]">{p.modelo}{p.capacidad ? ` (${p.capacidad})` : ""}</div>}
                 {p.imei && <div className="mt-0.5 font-mono text-[10px] text-[var(--color-ink-faint)]">IMEI: {p.imei}</div>}
                 <div className="mt-1.5 text-sm font-bold text-[var(--color-ink)]" style={{ fontVariantNumeric: "tabular-nums" }}>
-                  ${Number(p.precioVenta).toLocaleString("es-CO")}
+                  {formatCOP(p.precioVenta)}
                 </div>
               </button>
               );
@@ -241,7 +242,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
                 <div className="truncate text-sm font-medium text-[var(--color-ink)]">{item.nombre}</div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-[var(--color-ink-soft)]" style={{ fontVariantNumeric: "tabular-nums" }}>
-                    ${(item.price * item.qty).toLocaleString("es-CO")}
+                    {formatCOP(item.price * item.qty)}
                   </span>
                   {item.esLote && (
                     <div className="flex items-center gap-1">
@@ -275,7 +276,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
             <div className="mb-1 flex items-center justify-between text-sm">
               <span className="text-[var(--color-ink-soft)]">Total</span>
               <span className="text-lg font-bold text-[var(--color-ink)]" style={{ fontVariantNumeric: "tabular-nums" }}>
-                ${totalCart.toLocaleString("es-CO")}
+                {formatCOP(totalCart)}
               </span>
             </div>
             <button
@@ -365,13 +366,13 @@ function CheckoutModal({
             {cart.map((i) => (
               <div key={i.productId} className="flex justify-between text-sm text-[var(--color-ink)]">
                 <span className="truncate">{i.nombre}{i.qty > 1 ? ` ×${i.qty}` : ""}</span>
-                <span style={{ fontVariantNumeric: "tabular-nums" }}>${(i.price * i.qty).toLocaleString("es-CO")}</span>
+                <span style={{ fontVariantNumeric: "tabular-nums" }}>{formatCOP(i.price * i.qty)}</span>
               </div>
             ))}
           </div>
           <div className="mt-2 flex justify-between border-t border-[var(--color-line)] pt-2 text-base font-bold text-[var(--color-ink)]">
             <span>Total</span>
-            <span style={{ fontVariantNumeric: "tabular-nums" }}>${total.toLocaleString("es-CO")}</span>
+            <span style={{ fontVariantNumeric: "tabular-nums" }}>{formatCOP(total)}</span>
           </div>
         </div>
 
@@ -433,7 +434,7 @@ function CheckoutModal({
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
             }}
           >
-            {isPending ? "Procesando\u2026" : `Cobrar $${total.toLocaleString("es-CO")}`}
+            {isPending ? "Procesando\u2026" : `Cobrar ${formatCOP(total)}`}
           </button>
         </div>
       </form>

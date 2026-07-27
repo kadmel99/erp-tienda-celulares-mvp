@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import Modal from "@/components/modal";
 import { createApartado, registrarAbono, registrarSeguimiento } from "./actions";
+import { formatCOP } from "@/lib/money";
 
 type Cliente = { id: string; nombre: string; telefono: string | null };
 type Producto = { id: string; nombre: string; modelo: string | null; sku: string; precioVenta: { toString: () => string }; sucursalId: string };
@@ -97,9 +98,9 @@ export function ApartadosClient({ apartados, productos, clientes, sucursalId, us
                     <span className="text-xs text-[var(--color-ink-faint)]">{a.product.nombre}{a.product.modelo ? ` ${a.product.modelo}` : ""}</span>
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--color-ink-soft)]">
-                    <span>Total: <strong className="text-[var(--color-ink)]">${Number(a.valorTotal).toLocaleString("es-CO")}</strong></span>
-                    <span>Pagado: <strong className="text-[var(--color-success)]">${abonosTotal.toLocaleString("es-CO")}</strong></span>
-                    <span>Saldo: <strong className="text-[var(--color-danger)]">${Number(a.saldoPendiente).toLocaleString("es-CO")}</strong></span>
+                    <span>Total: <strong className="text-[var(--color-ink)]">{formatCOP(a.valorTotal)}</strong></span>
+                    <span>Pagado: <strong className="text-[var(--color-success)]">{formatCOP(abonosTotal)}</strong></span>
+                    <span>Saldo: <strong className="text-[var(--color-danger)]">{formatCOP(a.saldoPendiente)}</strong></span>
                   </div>
                   <div className="mt-2 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-[var(--color-panel-raised)]">
                     <div className="h-full rounded-full bg-[var(--color-accent)] transition-all"
@@ -135,7 +136,7 @@ export function ApartadosClient({ apartados, productos, clientes, sucursalId, us
                       <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Abonos</p>
                       {a.abonos.map((ab) => (
                         <div key={ab.id} className="flex justify-between text-xs text-[var(--color-ink)]">
-                          <span>${Number(ab.monto).toLocaleString("es-CO")} ({ab.metodoPago})</span>
+                          <span>{formatCOP(ab.monto)} ({ab.metodoPago})</span>
                           <span className="text-[var(--color-ink-faint)]">
                             {new Date(ab.createdAt).toLocaleDateString("es-CO")}
                           </span>
@@ -209,19 +210,19 @@ function CrearApartadoModal({ onClose, productos, clientes, sucursalId, userId }
             className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
             style={{ boxShadow: "var(--shadow-inset)" }}>
             <option value="">Seleccionar producto</option>
-            {productos.map((p) => <option key={p.id} value={p.id}>{p.nombre}{p.modelo ? ` ${p.modelo}` : ""} - ${Number(p.precioVenta).toLocaleString("es-CO")}</option>)}
+            {productos.map((p) => <option key={p.id} value={p.id}>{p.nombre}{p.modelo ? ` ${p.modelo}` : ""} - {formatCOP(p.precioVenta)}</option>)}
           </select>
         </div>
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Valor total ($)</label>
-          <input name="valorTotal" type="number" min="0" step="0.01" required
+          <input name="valorTotal" type="number" min="0" step="1" required
             defaultValue={valorTotal || ""}
             className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
             style={{ boxShadow: "var(--shadow-inset)" }} />
         </div>
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Abono inicial ($)</label>
-          <input name="abonoInicial" type="number" min="0" step="0.01" defaultValue="0"
+          <input name="abonoInicial" type="number" min="0" step="1" defaultValue="0"
             className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
             style={{ boxShadow: "var(--shadow-inset)" }} />
         </div>
@@ -259,12 +260,12 @@ function AbonoModal({ apartado, onClose, userId }: {
         <div className="rounded-[10px] bg-[var(--color-panel-raised)] p-3 text-sm">
           <div className="flex justify-between">
             <span className="text-[var(--color-ink-soft)]">Saldo pendiente</span>
-            <span className="font-bold text-[var(--color-danger)]">${restante.toLocaleString("es-CO")}</span>
+            <span className="font-bold text-[var(--color-danger)]">{formatCOP(restante)}</span>
           </div>
         </div>
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Monto ($)</label>
-          <input name="monto" type="number" min="1" step="0.01" required
+          <input name="monto" type="number" min="1" step="1" required
             className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
             style={{ boxShadow: "var(--shadow-inset)" }} />
         </div>

@@ -1,12 +1,9 @@
 "use client";
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { formatCOP as money } from "@/lib/money";
 
 type Point = { mes: string; ventas: number; costo: number };
-
-function money(n: number) {
-  return `$${n.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`;
-}
 
 export function VentasCostoChart({ data }: { data: Point[] }) {
   return (

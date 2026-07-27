@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import Modal from "@/components/modal";
 import { abrirCaja, cerrarCaja, registrarMovimiento } from "./actions";
+import { formatCOP } from "@/lib/money";
 
 type Movement = {
   id: string;
@@ -114,11 +115,11 @@ export function CajaClient({ openSession, closedSessions, sucursalId, userId, us
                     </span>
                   </div>
                   <div className="flex items-center gap-4 text-xs text-[var(--color-ink-soft)]">
-                    <span>Esperado: <strong className="text-[var(--color-ink)]">${Number(s.saldoFinalEsperado).toLocaleString("es-CO")}</strong></span>
-                    <span>Contado: <strong className="text-[var(--color-ink)]">${Number(s.saldoFinalContado).toLocaleString("es-CO")}</strong></span>
+                    <span>Esperado: <strong className="text-[var(--color-ink)]">{formatCOP(s.saldoFinalEsperado ?? 0)}</strong></span>
+                    <span>Contado: <strong className="text-[var(--color-ink)]">{formatCOP(s.saldoFinalContado ?? 0)}</strong></span>
                     {Number(s.diferencia) !== 0 && (
                       <span className={Number(s.diferencia) > 0 ? "text-[var(--color-success)]" : "text-[var(--color-danger)]"}>
-                        Diferencia: ${Number(s.diferencia).toLocaleString("es-CO")}
+                        Diferencia: {formatCOP(s.diferencia ?? 0)}
                       </span>
                     )}
                   </div>
@@ -168,13 +169,13 @@ function SessionCard({ session, userName }: { session: Session; userName: string
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Saldo inicial</p>
           <p className="text-sm font-semibold text-[var(--color-ink)]" style={{ fontVariantNumeric: "tabular-nums" }}>
-            ${Number(session.saldoInicial).toLocaleString("es-CO")}
+            {formatCOP(session.saldoInicial)}
           </p>
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Saldo actual</p>
           <p className="text-sm font-bold text-[var(--color-ink)]" style={{ fontVariantNumeric: "tabular-nums" }}>
-            ${saldoEsperado.toLocaleString("es-CO")}
+            {formatCOP(saldoEsperado)}
           </p>
         </div>
       </div>
@@ -185,8 +186,8 @@ function SessionCard({ session, userName }: { session: Session; userName: string
             Movimientos ({session.movimientos.length})
           </h3>
           <div className="flex gap-4 text-xs text-[var(--color-ink-soft)]">
-            <span>Ingresos: <strong className="text-[var(--color-success)]">${totalIngresos.toLocaleString("es-CO")}</strong></span>
-            <span>Egresos: <strong className="text-[var(--color-danger)]">${totalEgresos.toLocaleString("es-CO")}</strong></span>
+            <span>Ingresos: <strong className="text-[var(--color-success)]">{formatCOP(totalIngresos)}</strong></span>
+            <span>Egresos: <strong className="text-[var(--color-danger)]">{formatCOP(totalEgresos)}</strong></span>
           </div>
         </div>
         <div className="overflow-hidden rounded-[10px] border border-[var(--color-line)]">
@@ -215,7 +216,7 @@ function SessionCard({ session, userName }: { session: Session; userName: string
                     </span>
                   </td>
                   <td className="px-3 py-2 font-semibold text-[var(--color-ink)]" style={{ fontVariantNumeric: "tabular-nums" }}>
-                    ${Number(m.monto).toLocaleString("es-CO")}
+                    {formatCOP(m.monto)}
                   </td>
                   <td className="px-3 py-2 text-[var(--color-ink-soft)]">{m.concepto ?? "\u2014"}</td>
                   <td className="px-3 py-2 text-xs text-[var(--color-ink-faint)]">
@@ -253,7 +254,7 @@ function AbrirCajaModal({ onClose, sucursalId, userId }: {
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">
             Saldo inicial ($)
           </label>
-          <input name="saldoInicial" type="number" min="0" step="0.01" defaultValue="0"
+          <input name="saldoInicial" type="number" min="0" step="1" defaultValue="0"
             className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
             style={{ boxShadow: "var(--shadow-inset)" }} />
         </div>
@@ -298,26 +299,26 @@ function CerrarCajaModal({ session, onClose }: {
         <div className="rounded-[10px] bg-[var(--color-panel-raised)] p-3 text-sm">
           <div className="mb-1 flex justify-between">
             <span className="text-[var(--color-ink-soft)]">Saldo inicial</span>
-            <span className="font-medium text-[var(--color-ink)]">${Number(session.saldoInicial).toLocaleString("es-CO")}</span>
+            <span className="font-medium text-[var(--color-ink)]">{formatCOP(session.saldoInicial)}</span>
           </div>
           <div className="mb-1 flex justify-between">
             <span className="text-[var(--color-ink-soft)]">Ingresos</span>
-            <span className="font-medium text-[var(--color-success)]">+${totalIngresos.toLocaleString("es-CO")}</span>
+            <span className="font-medium text-[var(--color-success)]">+{formatCOP(totalIngresos)}</span>
           </div>
           <div className="mb-1 flex justify-between">
             <span className="text-[var(--color-ink-soft)]">Egresos</span>
-            <span className="font-medium text-[var(--color-danger)]">-${totalEgresos.toLocaleString("es-CO")}</span>
+            <span className="font-medium text-[var(--color-danger)]">-{formatCOP(totalEgresos)}</span>
           </div>
           <div className="flex justify-between border-t border-[var(--color-line)] pt-1 font-bold text-[var(--color-ink)]">
             <span>Saldo esperado</span>
-            <span>${saldoEsperado.toLocaleString("es-CO")}</span>
+            <span>{formatCOP(saldoEsperado)}</span>
           </div>
         </div>
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">
             Conteo f&iacute;sico ($)
           </label>
-          <input name="saldoFinalContado" type="number" min="0" step="0.01" required
+          <input name="saldoFinalContado" type="number" min="0" step="1" required
             className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
             style={{ boxShadow: "var(--shadow-inset)" }} />
         </div>
@@ -361,7 +362,7 @@ function MovimientoModal({ sessionId, onClose }: {
         </div>
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Monto ($)</label>
-          <input name="monto" type="number" min="0" step="0.01" required
+          <input name="monto" type="number" min="0" step="1" required
             className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
             style={{ boxShadow: "var(--shadow-inset)" }} />
         </div>

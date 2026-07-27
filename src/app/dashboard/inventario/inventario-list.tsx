@@ -4,6 +4,7 @@ import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import Modal from "@/components/modal";
 import { createProduct, updateProduct } from "./actions";
+import { formatCOP } from "@/lib/money";
 
 const CATEGORIAS = [
   "IPHONE", "IPAD", "APPLE_WATCH", "AIRPODS",
@@ -167,7 +168,7 @@ export function InventarioList({ products, sucursales, isAdmin, userSucursalId, 
                   )}
                 </td>
                 <td className="px-4 py-3 font-semibold text-[var(--color-ink)]" style={{ fontVariantNumeric: "tabular-nums" }}>
-                  ${Number(p.precioVenta).toLocaleString("es-CO")}
+                  {formatCOP(p.precioVenta)}
                 </td>
                 <td className="px-4 py-3 text-xs text-[var(--color-ink-soft)]">{p.sucursal?.nombre ?? "\u2014"}</td>
                 <td className="flex gap-2 px-4 py-3">
@@ -292,13 +293,13 @@ function ProductoFormModal({ title, producto, sucursales, isAdmin, defaultSucurs
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Costo ($)</label>
-            <input name="costo" type="number" min="0" step="0.01" required defaultValue={producto ? Number(producto.costo) : ""}
+            <input name="costo" type="number" min="0" step="1" required defaultValue={producto ? Number(producto.costo) : ""}
               className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
               style={{ boxShadow: "var(--shadow-inset)" }} />
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Precio venta ($)</label>
-            <input name="precioVenta" type="number" min="0" step="0.01" required defaultValue={producto ? Number(producto.precioVenta) : ""}
+            <input name="precioVenta" type="number" min="0" step="1" required defaultValue={producto ? Number(producto.precioVenta) : ""}
               className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
               style={{ boxShadow: "var(--shadow-inset)" }} />
           </div>

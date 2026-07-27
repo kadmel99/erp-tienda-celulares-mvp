@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Sparkline } from "./sparkline";
 import { VentasCostoChart } from "./ventas-costo-chart";
 import { ApartadosStatusDonut } from "./apartados-status-donut";
+import { formatCOP as money } from "@/lib/money";
 
 const CATEGORIA_LABEL: Record<string, string> = {
   IPHONE: "iPhone",
@@ -18,10 +19,6 @@ const CATEGORIA_LABEL: Record<string, string> = {
   VIDRIO: "Vidrios templados",
   ACCESORIO: "Accesorios",
 };
-
-function money(n: number) {
-  return `$${n.toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
 
 async function getKPIs(
   role: string,

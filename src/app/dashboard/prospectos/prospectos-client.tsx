@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { formatCOP } from "@/lib/money";
 
 type Prospecto = {
   id: string;
@@ -105,7 +106,7 @@ export function ProspectosClient({ prospectos, isAdmin, qrDataUrl, sucursalNombr
                 <td className="px-4 py-3 text-[var(--color-ink-soft)]">{p.correo ?? "\u2014"}</td>
                 <td className="px-4 py-3 text-[var(--color-ink-soft)]">{p.productoInteres ?? "\u2014"}</td>
                 <td className="px-4 py-3 text-[var(--color-ink)]" style={{ fontVariantNumeric: "tabular-nums" }}>
-                  {p.presupuesto ? `$${Number(p.presupuesto).toLocaleString("es-CO")}` : "\u2014"}
+                  {p.presupuesto ? formatCOP(p.presupuesto) : "\u2014"}
                 </td>
                 <td className="px-4 py-3">
                   <span className="rounded-full bg-[var(--color-accent-soft)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-accent-deep)]">

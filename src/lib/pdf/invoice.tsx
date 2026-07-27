@@ -1,5 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
+import { formatCOP } from "@/lib/money";
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 10, fontFamily: "Helvetica" },
@@ -75,15 +76,15 @@ export function InvoicePDF({ invoice }: {
                 {item.product.imei ? `\nIMEI: ${item.product.imei}` : ""}
               </Text>
               <Text style={styles.col20}>{item.cantidad}</Text>
-              <Text style={styles.col20}>${Number(item.precioUnit).toLocaleString("es-CO")}</Text>
-              <Text style={styles.col20}>${(Number(item.precioUnit) * item.cantidad).toLocaleString("es-CO")}</Text>
+              <Text style={styles.col20}>{formatCOP(item.precioUnit)}</Text>
+              <Text style={styles.col20}>{formatCOP(Number(item.precioUnit) * item.cantidad)}</Text>
             </View>
           ))}
         </View>
 
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalValue}>${Number(invoice.sale.total).toLocaleString("es-CO")}</Text>
+          <Text style={styles.totalValue}>{formatCOP(invoice.sale.total)}</Text>
         </View>
 
         <Text style={{ marginTop: 10, color: "#6C685F" }}>

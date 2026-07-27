@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { enviarFacturaEmail, getInvoicePDFUrl } from "./actions";
+import { formatCOP } from "@/lib/money";
 
 type Invoice = {
   id: string;
@@ -82,7 +83,7 @@ export function FacturacionClient({ invoices, readOnly = false }: Props) {
                 <td className="px-4 py-3 text-[var(--color-ink-soft)]">{inv.sucursal.nombre}</td>
                 <td className="px-4 py-3 text-[var(--color-ink-soft)]">{inv.sale.cliente?.nombre ?? "\u2014"}</td>
                 <td className="px-4 py-3 font-semibold text-[var(--color-ink)]" style={{ fontVariantNumeric: "tabular-nums" }}>
-                  ${Number(inv.sale.total).toLocaleString("es-CO")}
+                  {formatCOP(inv.sale.total)}
                 </td>
                 <td className="px-4 py-3">
                   <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${

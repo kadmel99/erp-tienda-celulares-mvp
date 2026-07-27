@@ -1,6 +1,7 @@
 "use client";
 
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
+import { formatCOP } from "@/lib/money";
 
 type Point = { date: string; value: number };
 
@@ -16,7 +17,7 @@ export function Sparkline({ data }: { data: Point[] }) {
         </defs>
         <Tooltip
           cursor={false}
-          formatter={(value) => [`$${Number(value).toLocaleString("es-CO", { minimumFractionDigits: 2 })}`, "Ventas"]}
+          formatter={(value) => [formatCOP(Number(value)), "Ventas"]}
           labelFormatter={(label) => new Date(String(label)).toLocaleDateString("es-CO", { day: "2-digit", month: "short" })}
           contentStyle={{
             background: "var(--color-panel)",
