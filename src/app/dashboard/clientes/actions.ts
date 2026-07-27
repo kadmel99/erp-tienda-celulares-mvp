@@ -21,12 +21,14 @@ export async function createClient(formData: FormData) {
   const telefono = (formData.get("telefono") as string)?.trim() || null;
   const correo = (formData.get("correo") as string)?.trim() || null;
   const ciudad = (formData.get("ciudad") as string)?.trim() || null;
+  const cedula = (formData.get("cedula") as string)?.trim() || null;
+  const direccion = (formData.get("direccion") as string)?.trim() || null;
 
   if (!nombre) return { error: "El nombre es obligatorio" };
 
   try {
     const client = await prisma.cliente.create({
-      data: { nombre, telefono, correo, ciudad },
+      data: { nombre, telefono, correo, ciudad, cedula, direccion },
     });
     revalidateClientUsers();
     return { success: true, client };
@@ -46,13 +48,15 @@ export async function updateCliente(id: string, formData: FormData) {
   const telefono = (formData.get("telefono") as string)?.trim() || null;
   const correo = (formData.get("correo") as string)?.trim() || null;
   const ciudad = (formData.get("ciudad") as string)?.trim() || null;
+  const cedula = (formData.get("cedula") as string)?.trim() || null;
+  const direccion = (formData.get("direccion") as string)?.trim() || null;
 
   if (!nombre) return { error: "El nombre es obligatorio" };
 
   try {
     await prisma.cliente.update({
       where: { id },
-      data: { nombre, telefono, correo, ciudad },
+      data: { nombre, telefono, correo, ciudad, cedula, direccion },
     });
     revalidateClientUsers();
     return { success: true };

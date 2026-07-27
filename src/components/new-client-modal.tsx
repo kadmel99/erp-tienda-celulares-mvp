@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import Modal from "@/components/modal";
 import { createClient } from "@/app/dashboard/clientes/actions";
 
-type Cliente = { id: string; nombre: string; telefono: string | null; correo: string | null; ciudad: string | null };
+type Cliente = { id: string; nombre: string; telefono: string | null; correo: string | null; ciudad: string | null; cedula: string | null; direccion: string | null };
 
 export function NewClientModal({ onClose, onCreated }: {
   onClose: () => void;
@@ -36,6 +36,12 @@ export function NewClientModal({ onClose, onCreated }: {
             style={{ boxShadow: "var(--shadow-inset)" }} />
         </div>
         <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Cédula</label>
+          <input name="cedula"
+            className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
+            style={{ boxShadow: "var(--shadow-inset)" }} />
+        </div>
+        <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Correo</label>
           <input name="correo" type="email"
             className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
@@ -44,6 +50,12 @@ export function NewClientModal({ onClose, onCreated }: {
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Ciudad</label>
           <input name="ciudad"
+            className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
+            style={{ boxShadow: "var(--shadow-inset)" }} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Dirección</label>
+          <input name="direccion"
             className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
             style={{ boxShadow: "var(--shadow-inset)" }} />
         </div>

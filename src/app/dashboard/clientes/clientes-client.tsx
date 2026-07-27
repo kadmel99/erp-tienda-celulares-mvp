@@ -11,6 +11,8 @@ type Cliente = {
   telefono: string | null;
   correo: string | null;
   ciudad: string | null;
+  cedula: string | null;
+  direccion: string | null;
   createdAt: Date;
   _count: { ventas: number; apartados: number };
 };
@@ -69,6 +71,7 @@ export function ClientesClient({ clientes: clientesIniciales }: Props) {
           <thead>
             <tr className="border-b border-[var(--color-line)] text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">
               <th className="px-4 py-3">Nombre</th>
+              <th className="px-4 py-3">C&eacute;dula</th>
               <th className="px-4 py-3">Tel&eacute;fono</th>
               <th className="px-4 py-3">Correo</th>
               <th className="px-4 py-3">Ciudad</th>
@@ -88,6 +91,7 @@ export function ClientesClient({ clientes: clientesIniciales }: Props) {
             {filtrados.map((c) => (
               <tr key={c.id} className="border-b border-[var(--color-line)] last:border-0">
                 <td className="px-4 py-3 font-medium text-[var(--color-ink)]">{c.nombre}</td>
+                <td className="px-4 py-3 text-[var(--color-ink-soft)]">{c.cedula ?? "—"}</td>
                 <td className="px-4 py-3 text-[var(--color-ink-soft)]">{c.telefono ?? "—"}</td>
                 <td className="px-4 py-3 text-[var(--color-ink-soft)]">{c.correo ?? "—"}</td>
                 <td className="px-4 py-3 text-[var(--color-ink-soft)]">{c.ciudad ?? "—"}</td>
@@ -131,7 +135,7 @@ export function ClientesClient({ clientes: clientesIniciales }: Props) {
 function EditClientModal({ cliente, onClose, onUpdated }: {
   cliente: Cliente;
   onClose: () => void;
-  onUpdated: (c: { id: string; nombre: string; telefono: string | null; correo: string | null; ciudad: string | null }) => void;
+  onUpdated: (c: { id: string; nombre: string; telefono: string | null; correo: string | null; ciudad: string | null; cedula: string | null; direccion: string | null }) => void;
 }) {
   const action = updateCliente.bind(null, cliente.id);
   const [state, formAction, isPending] = useActionState(async (_prev: unknown, fd: FormData) => {
@@ -143,6 +147,8 @@ function EditClientModal({ cliente, onClose, onUpdated }: {
         telefono: (fd.get("telefono") as string) || null,
         correo: (fd.get("correo") as string) || null,
         ciudad: (fd.get("ciudad") as string) || null,
+        cedula: (fd.get("cedula") as string) || null,
+        direccion: (fd.get("direccion") as string) || null,
       });
     }
     return result;
@@ -166,6 +172,12 @@ function EditClientModal({ cliente, onClose, onUpdated }: {
             style={{ boxShadow: "var(--shadow-inset)" }} />
         </div>
         <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">C&eacute;dula</label>
+          <input name="cedula" defaultValue={cliente.cedula ?? ""}
+            className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
+            style={{ boxShadow: "var(--shadow-inset)" }} />
+        </div>
+        <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Correo</label>
           <input name="correo" type="email" defaultValue={cliente.correo ?? ""}
             className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
@@ -174,6 +186,12 @@ function EditClientModal({ cliente, onClose, onUpdated }: {
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Ciudad</label>
           <input name="ciudad" defaultValue={cliente.ciudad ?? ""}
+            className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
+            style={{ boxShadow: "var(--shadow-inset)" }} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Direcci&oacute;n</label>
+          <input name="direccion" defaultValue={cliente.direccion ?? ""}
             className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
             style={{ boxShadow: "var(--shadow-inset)" }} />
         </div>

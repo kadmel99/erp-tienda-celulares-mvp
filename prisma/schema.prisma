@@ -154,6 +154,8 @@ model Cliente {
   telefono  String?
   correo    String?
   ciudad    String?
+  cedula    String?
+  direccion String?
   createdAt DateTime @default(now()) @map("created_at")
 
   ventas    Sale[]

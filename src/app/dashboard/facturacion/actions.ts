@@ -4,6 +4,7 @@ import { getPrisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import React from "react";
 import { renderToStream } from "@react-pdf/renderer";
+import QRCode from "qrcode";
 import { InvoicePDF } from "@/lib/pdf/invoice";
 import nodemailer from "nodemailer";
 import { requireWriteAccess } from "@/lib/authz";
@@ -19,9 +20,11 @@ export async function getInvoicePDFUrl(invoiceId: string): Promise<string | { er
       sucursal: { select: { nombre: true, ciudad: true } },
       sale: {
         include: {
-          cliente: { select: { nombre: true, telefono: true } },
+          cliente: { select: { nombre: true, telefono: true, cedula: true, direccion: true } },
           items: {
-            include: { product: { select: { nombre: true, modelo: true, imei: true } } },
+            include: {
+              product: { select: { nombre: true, modelo: true, imei: true, tieneGarantia: true, mesesGarantia: true } },
+            },
           },
         },
       },
@@ -30,13 +33,23 @@ export async function getInvoicePDFUrl(invoiceId: string): Promise<string | { er
 
   if (!invoice) return { error: "Factura no encontrada" };
 
+  const vendedor = await prisma.usuario.findUnique({
+    where: { id: invoice.sale.userId },
+    select: { nombre: true },
+  });
+
   try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const qrDataUrl = await QRCode.toDataURL(`${baseUrl}/factura/${invoiceId}`, { width: 180, margin: 1 });
+
     const stream = await (renderToStream as (el: React.ReactElement) => ReturnType<typeof renderToStream>)(
       React.createElement(InvoicePDF, {
         invoice: {
           numero: invoice.numero,
           createdAt: invoice.createdAt,
           sucursal: invoice.sucursal,
+          vendedorNombre: vendedor?.nombre ?? null,
+          qrDataUrl,
           sale: {
             total: Number(invoice.sale.total),
             metodoPago: invoice.sale.metodoPago,
