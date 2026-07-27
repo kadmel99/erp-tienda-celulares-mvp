@@ -20,7 +20,7 @@ export default async function ApartadosPage() {
       where: filter,
       orderBy: { createdAt: "desc" },
       include: {
-        cliente: { select: { id: true, nombre: true, telefono: true } },
+        cliente: { select: { id: true, nombre: true, telefono: true, correo: true } },
         product: { select: { id: true, nombre: true, modelo: true, sku: true, precioVenta: true, sucursalId: true } },
         abonos: { orderBy: { createdAt: "desc" } },
         seguimientos: { orderBy: { createdAt: "desc" }, take: 3 },

@@ -2,7 +2,9 @@
 
 import { useActionState, useMemo, useState } from "react";
 import Modal from "@/components/modal";
-import { createSale, createClient } from "./actions";
+import { createSale } from "./actions";
+import { getInvoicePDFUrl } from "../facturacion/actions";
+import { NewClientModal } from "@/components/new-client-modal";
 import { formatCOP } from "@/lib/money";
 
 type Product = {
@@ -65,8 +67,23 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
   const [showCheckout, setShowCheckout] = useState(false);
   const [metodoPago, setMetodoPago] = useState("EFECTIVO");
   const [clienteId, setClienteId] = useState("");
-  const [showSuccess, setShowSuccess] = useState<{ saleId: string; numero: number } | null>(null);
+  const [showSuccess, setShowSuccess] = useState<{ saleId: string; numero: number; invoiceId: string } | null>(null);
   const [showNewClient, setShowNewClient] = useState(false);
+  const [verFacturaLoading, setVerFacturaLoading] = useState(false);
+  const [verFacturaError, setVerFacturaError] = useState<string | null>(null);
+
+  async function handleVerFactura() {
+    if (!showSuccess) return;
+    setVerFacturaLoading(true);
+    setVerFacturaError(null);
+    const result = await getInvoicePDFUrl(showSuccess.invoiceId);
+    if (typeof result === "string") {
+      window.open(result, "_blank");
+    } else {
+      setVerFacturaError(result.error);
+    }
+    setVerFacturaLoading(false);
+  }
 
   const filtrados = useMemo(() => {
     const q = busqueda.toLowerCase();
@@ -138,16 +155,28 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
           <p className="mb-6 text-sm text-[var(--color-ink-soft)]">
             Factura #{showSuccess.numero} generada exitosamente.
           </p>
-          <button
-            onClick={() => { setShowSuccess(null); setCart([]); setClienteId(""); }}
-            className="rounded-[12px] border-none px-6 py-2.5 text-sm font-semibold text-white"
-            style={{
-              background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-            }}
-          >
-            Nueva venta
-          </button>
+          {verFacturaError && (
+            <p className="mb-4 rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{verFacturaError}</p>
+          )}
+          <div className="flex gap-3">
+            <button
+              onClick={handleVerFactura}
+              disabled={verFacturaLoading}
+              className="flex-1 rounded-[12px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-6 py-2.5 text-sm font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] disabled:opacity-50"
+            >
+              {verFacturaLoading ? "Generando…" : "Ver factura"}
+            </button>
+            <button
+              onClick={() => { setShowSuccess(null); setCart([]); setClienteId(""); setVerFacturaError(null); }}
+              className="flex-1 rounded-[12px] border-none px-6 py-2.5 text-sm font-semibold text-white"
+              style={{
+                background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
+              }}
+            >
+              Nueva venta
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -329,7 +358,7 @@ function CheckoutModal({
   clienteId: string;
   setClienteId: (v: string) => void;
   onClose: () => void;
-  onSuccess: (result: { saleId: string; numero: number }) => void;
+  onSuccess: (result: { saleId: string; numero: number; invoiceId: string }) => void;
   showNewClient: boolean;
   setShowNewClient: (v: boolean) => void;
 }) {
@@ -342,7 +371,7 @@ function CheckoutModal({
     fd.set("total", String(total));
     const result = await createSale(fd);
     if (result && "success" in result && result.success) {
-      onSuccess({ saleId: result.saleId as string, numero: result.numero as number });
+      onSuccess({ saleId: result.saleId as string, numero: result.numero as number, invoiceId: result.invoiceId as string });
     }
     return result;
   }, undefined);
@@ -437,55 +466,6 @@ function CheckoutModal({
             {isPending ? "Procesando\u2026" : `Cobrar ${formatCOP(total)}`}
           </button>
         </div>
-      </form>
-    </Modal>
-  );
-}
-
-function NewClientModal({ onClose, onCreated }: {
-  onClose: () => void;
-  onCreated: (c: Cliente) => void;
-}) {
-  const [state, formAction, isPending] = useActionState(async (_prev: unknown, fd: FormData) => {
-    const result = await createClient(fd);
-    if (result && "success" in result && result.success) {
-      onCreated(result.client as Cliente);
-    }
-    return result;
-  }, undefined);
-
-  const error = state && "error" in state ? state.error : undefined;
-
-  return (
-    <Modal open title="Nuevo cliente" onClose={onClose}>
-      <form action={formAction} className="flex flex-col gap-3">
-        <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Nombre</label>
-          <input name="nombre" required
-            className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
-            style={{ boxShadow: "var(--shadow-inset)" }} />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Tel&eacute;fono</label>
-          <input name="telefono"
-            className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
-            style={{ boxShadow: "var(--shadow-inset)" }} />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Correo</label>
-          <input name="correo" type="email"
-            className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
-            style={{ boxShadow: "var(--shadow-inset)" }} />
-        </div>
-        {error && <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{error}</p>}
-        <button type="submit" disabled={isPending}
-          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}>
-          {isPending ? "Guardando\u2026" : "Crear cliente"}
-        </button>
       </form>
     </Modal>
   );

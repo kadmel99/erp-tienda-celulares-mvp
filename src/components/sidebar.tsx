@@ -13,6 +13,7 @@ const adminNav: NavItem[] = [
   { label: "Inventario", href: "/dashboard/inventario" },
   { label: "POS", href: "/dashboard/pos" },
   { label: "Apartados", href: "/dashboard/apartados" },
+  { label: "Clientes", href: "/dashboard/clientes" },
   { label: "Cartera", href: "/dashboard/cartera" },
   { label: "Caja", href: "/dashboard/caja" },
   { label: "Facturaci\u00f3n", href: "/dashboard/facturacion" },
@@ -26,6 +27,7 @@ const operatorNav: NavItem[] = [
   { label: "Inventario", href: "/dashboard/inventario" },
   { label: "POS", href: "/dashboard/pos" },
   { label: "Apartados", href: "/dashboard/apartados" },
+  { label: "Clientes", href: "/dashboard/clientes" },
   { label: "Caja", href: "/dashboard/caja" },
   { label: "Garant\u00edas", href: "/dashboard/garantias" },
 ];

@@ -92,7 +92,7 @@ export async function createSale(formData: FormData) {
       });
       const nextNumero = (lastInvoice?.numero ?? 0) + 1;
 
-      await tx.invoice.create({
+      const invoice = await tx.invoice.create({
         data: {
           sucursalId,
           saleId: sale.id,
@@ -101,56 +101,14 @@ export async function createSale(formData: FormData) {
         },
       });
 
-      return { id: sale.id, numero: nextNumero };
+      return { id: sale.id, numero: nextNumero, invoiceId: invoice.id };
     });
 
     revalidatePath("/dashboard/inventario");
     revalidatePath("/dashboard/pos");
-    return { success: true, saleId: result.id, numero: result.numero };
+    return { success: true, saleId: result.id, numero: result.numero, invoiceId: result.invoiceId };
   } catch {
     return { error: "Error al procesar la venta" };
   }
 }
 
-export async function searchClients(query: string) {
-  const prisma = getPrisma();
-  if (!prisma || !query.trim()) return [];
-
-  const clients = await prisma.cliente.findMany({
-    where: {
-      OR: [
-        { nombre: { contains: query.trim(), mode: "insensitive" } },
-        { telefono: { contains: query.trim(), mode: "insensitive" } },
-        { correo: { contains: query.trim(), mode: "insensitive" } },
-      ],
-    },
-    take: 10,
-    orderBy: { nombre: "asc" },
-  });
-
-  return clients;
-}
-
-export async function createClient(formData: FormData) {
-  const denied = await requireWriteAccess();
-  if (denied) return denied;
-
-  const prisma = getPrisma();
-  if (!prisma) return { error: "Error de conexi\u00f3n" };
-
-  const nombre = (formData.get("nombre") as string)?.trim();
-  const telefono = (formData.get("telefono") as string)?.trim() || null;
-  const correo = (formData.get("correo") as string)?.trim() || null;
-
-  if (!nombre) return { error: "El nombre es obligatorio" };
-
-  try {
-    const client = await prisma.cliente.create({
-      data: { nombre, telefono, correo },
-    });
-    revalidatePath("/dashboard/pos");
-    return { success: true, client };
-  } catch {
-    return { error: "Error al crear el cliente" };
-  }
-}

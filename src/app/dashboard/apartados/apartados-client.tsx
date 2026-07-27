@@ -4,8 +4,9 @@ import { useActionState, useState } from "react";
 import Modal from "@/components/modal";
 import { createApartado, registrarAbono, registrarSeguimiento } from "./actions";
 import { formatCOP } from "@/lib/money";
+import { NewClientModal } from "@/components/new-client-modal";
 
-type Cliente = { id: string; nombre: string; telefono: string | null };
+type Cliente = { id: string; nombre: string; telefono: string | null; correo: string | null };
 type Producto = { id: string; nombre: string; modelo: string | null; sku: string; precioVenta: { toString: () => string }; sucursalId: string };
 type Abono = { id: string; monto: { toString: () => string }; metodoPago: string; userId: string; createdAt: Date };
 type Seguimiento = { id: string; nota: string; proximaAccion: Date | null; userId: string; createdAt: Date };
@@ -191,18 +192,37 @@ function CrearApartadoModal({ onClose, productos, clientes, sucursalId, userId }
   const [productoId, setProductoId] = useState("");
   const selected = productos.find((p) => p.id === productoId);
   const valorTotal = selected ? Number(selected.precioVenta) : 0;
+  const [clientesList, setClientesList] = useState(clientes);
+  const [clienteId, setClienteId] = useState("");
+  const [showNewClient, setShowNewClient] = useState(false);
+
+  if (showNewClient) {
+    return (
+      <NewClientModal
+        onClose={() => setShowNewClient(false)}
+        onCreated={(c) => { setClientesList((prev) => [...prev, c]); setClienteId(c.id); setShowNewClient(false); }}
+      />
+    );
+  }
 
   return (
     <Modal open title="Nuevo apartado" onClose={onClose}>
       <form action={formAction} className="flex flex-col gap-3">
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Cliente</label>
-          <select name="clienteId" required
-            className="w-full rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
-            style={{ boxShadow: "var(--shadow-inset)" }}>
-            <option value="">Seleccionar cliente</option>
-            {clientes.map((c) => <option key={c.id} value={c.id}>{c.nombre}{c.telefono ? ` (${c.telefono})` : ""}</option>)}
-          </select>
+          <div className="flex gap-2">
+            <select name="clienteId" required value={clienteId} onChange={(e) => setClienteId(e.target.value)}
+              className="flex-1 rounded-[10px] border-none bg-[var(--color-panel-raised)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
+              style={{ boxShadow: "var(--shadow-inset)" }}>
+              <option value="">Seleccionar cliente</option>
+              {clientesList.map((c) => <option key={c.id} value={c.id}>{c.nombre}{c.telefono ? ` (${c.telefono})` : ""}</option>)}
+            </select>
+            <button type="button" onClick={() => setShowNewClient(true)}
+              className="rounded-[10px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-3 py-2 text-xs font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]"
+            >
+              + Nuevo
+            </button>
+          </div>
         </div>
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Producto</label>
