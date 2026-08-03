@@ -32,6 +32,7 @@ model Sucursal {
   prospectos        Prospecto[]
   usuariosAsignados UsuarioSucursal[]
   hallazgos         Hallazgo[]
+  serviciosTecnicos ServicioTecnico[]
 
   @@map("sucursales")
 }
@@ -117,6 +118,7 @@ model Product {
   apartados   Apartado[]
   tradeInDe   TradeIn[]           @relation("TradeInProductoResultante")
   warranties  Warranty[]
+  repuestosServicio ServicioTecnicoRepuesto[]
 
   @@index([sucursalId])
   @@index([imei])
@@ -158,8 +160,9 @@ model Cliente {
   direccion String?
   createdAt DateTime @default(now()) @map("created_at")
 
-  ventas    Sale[]
-  apartados Apartado[]
+  ventas            Sale[]
+  apartados         Apartado[]
+  serviciosTecnicos ServicioTecnico[]
 
   @@map("clientes")
 }
@@ -341,6 +344,7 @@ enum CashMovementType {
   INGRESO_VENTA
   INGRESO_ABONO
   INGRESO_CAJA_MENOR
+  INGRESO_SERVICIO_TECNICO
   EGRESO_CAJA_MENOR
   OTRO
 }
@@ -383,6 +387,87 @@ model Warranty {
   updatedAt   DateTime       @updatedAt @map("updated_at")
 
   @@map("warranties")
+}
+
+// ── Servicio técnico (reparaciones) ────────────────────────────────
+
+enum ServicioTecnicoStatus {
+  RECIBIDO
+  DIAGNOSTICO
+  COTIZADO
+  APROBADO
+  EN_REPARACION
+  ESPERANDO_REPUESTO
+  LISTO
+  ENTREGADO
+  NO_APROBADO
+  NO_REPARABLE
+  CANCELADO
+}
+
+model ServicioTecnico {
+  id         String   @id @default(cuid())
+  numero     Int
+  sucursalId String   @map("sucursal_id")
+  sucursal   Sucursal @relation(fields: [sucursalId], references: [id])
+  clienteId  String   @map("cliente_id")
+  cliente    Cliente  @relation(fields: [clienteId], references: [id])
+
+  marca           String
+  modelo          String
+  color           String?
+  imei            String?
+  claveDesbloqueo String? @map("clave_desbloqueo")
+
+  falla           String
+  condicionFisica String? @map("condicion_fisica")
+  accesorios      String?
+
+  diagnostico   String?
+  costoEstimado Decimal?  @map("costo_estimado") @db.Decimal(12, 2)
+  fechaPromesa  DateTime? @map("fecha_promesa")
+
+  costoFinal   Decimal?  @map("costo_final") @db.Decimal(12, 2)
+  garantiaDias Int?      @map("garantia_dias")
+  entregadoEn  DateTime? @map("entregado_en")
+
+  status    ServicioTecnicoStatus @default(RECIBIDO)
+  tecnicoId String                @map("tecnico_id")
+  userId    String                @map("user_id")
+  createdAt DateTime              @default(now()) @map("created_at")
+  updatedAt DateTime              @updatedAt @map("updated_at")
+
+  repuestos    ServicioTecnicoRepuesto[]
+  seguimientos ServicioTecnicoSeguimiento[]
+
+  @@unique([sucursalId, numero])
+  @@index([sucursalId, status])
+  @@map("servicios_tecnicos")
+}
+
+model ServicioTecnicoRepuesto {
+  id            String          @id @default(cuid())
+  servicioId    String          @map("servicio_id")
+  servicio      ServicioTecnico @relation(fields: [servicioId], references: [id])
+  productId     String?         @map("product_id")
+  product       Product?        @relation(fields: [productId], references: [id])
+  nombre        String
+  cantidad      Int             @default(1)
+  costoUnitario Decimal         @map("costo_unitario") @db.Decimal(12, 2)
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  @@map("servicio_tecnico_repuestos")
+}
+
+model ServicioTecnicoSeguimiento {
+  id         String          @id @default(cuid())
+  servicioId String          @map("servicio_id")
+  servicio   ServicioTecnico @relation(fields: [servicioId], references: [id])
+  nota       String
+  userId     String          @map("user_id")
+  createdAt  DateTime        @default(now()) @map("created_at")
+
+  @@map("servicio_tecnico_seguimientos")
 }
 
 // ── Auditoría / Revisión fiscal ───────────────────────────────────

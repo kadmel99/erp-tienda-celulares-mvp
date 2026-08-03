@@ -18,6 +18,7 @@ const adminNav: NavItem[] = [
   { label: "Caja", href: "/dashboard/caja" },
   { label: "Facturaci\u00f3n", href: "/dashboard/facturacion" },
   { label: "Garant\u00edas", href: "/dashboard/garantias" },
+  { label: "Servicio t\u00e9cnico", href: "/dashboard/servicio-tecnico" },
   { label: "Auditor\u00eda", href: "/dashboard/auditoria" },
   { label: "Admin", href: "/admin" },
 ];
@@ -30,6 +31,7 @@ const operatorNav: NavItem[] = [
   { label: "Clientes", href: "/dashboard/clientes" },
   { label: "Caja", href: "/dashboard/caja" },
   { label: "Garant\u00edas", href: "/dashboard/garantias" },
+  { label: "Servicio t\u00e9cnico", href: "/dashboard/servicio-tecnico" },
 ];
 
 const fiscalNav: NavItem[] = [
