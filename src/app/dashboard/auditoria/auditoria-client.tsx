@@ -84,11 +84,7 @@ export function AuditoriaClient({ hallazgos, sucursales, isAdmin }: Props) {
             {descargando ? "Generando…" : "Descargar reporte PDF"}
           </button>
           <button onClick={() => setShowNuevo(true)}
-            className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
-            style={{
-              background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-            }}>
+            className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white btn-skeu-primary">
             Nuevo hallazgo
           </button>
         </div>
@@ -175,7 +171,7 @@ function HallazgoRow({ hallazgo, isAdmin }: { hallazgo: Hallazgo; isAdmin: boole
 
   return (
     <>
-      <tr className="cursor-pointer border-b border-[var(--color-line)] last:border-0 hover:bg-[var(--color-panel-raised)]"
+      <tr className="animate-fade-in cursor-pointer border-b border-[var(--color-line)] last:border-0 hover:bg-[var(--color-panel-raised)]"
         onClick={() => setExpandido((v) => !v)}>
         <td className="px-4 py-3 text-[var(--color-ink-soft)]">{hallazgo.sucursal.nombre}</td>
         <td className="px-4 py-3">
@@ -214,7 +210,7 @@ function HallazgoRow({ hallazgo, isAdmin }: { hallazgo: Hallazgo; isAdmin: boole
         )}
       </tr>
       {expandido && (
-        <tr className="border-b border-[var(--color-line)] bg-[var(--color-panel-raised)]">
+        <tr className="animate-fade-in border-b border-[var(--color-line)] bg-[var(--color-panel-raised)]">
           <td colSpan={isAdmin ? 8 : 7} className="px-4 py-3 text-sm text-[var(--color-ink-soft)]">
             {hallazgo.descripcion}
           </td>
@@ -280,11 +276,7 @@ function NuevoHallazgoModal({ sucursales, onClose }: {
         </div>
         {error && <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{error}</p>}
         <button type="submit" disabled={isPending}
-          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}>
+          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50 btn-skeu-primary">
           {isPending ? "Guardando…" : "Registrar hallazgo"}
         </button>
       </form>

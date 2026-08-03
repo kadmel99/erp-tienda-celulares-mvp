@@ -191,7 +191,7 @@ function KpiCard({
 }) {
   const content = (
     <div
-      className="rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-5 transition-shadow hover:shadow-lg"
+      className="animate-fade-in-up rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-5 transition-shadow hover:shadow-lg"
       style={{ boxShadow: "var(--shadow-panel)" }}
     >
       <div className="flex items-start justify-between gap-2">
@@ -218,7 +218,7 @@ function KpiCard({
 function Panel({ title, href, children }: { title: string; href?: string; children: React.ReactNode }) {
   return (
     <div
-      className="rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-5"
+      className="animate-fade-in-up rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-5"
       style={{ boxShadow: "var(--shadow-panel)" }}
     >
       <div className="mb-4 flex items-center justify-between">

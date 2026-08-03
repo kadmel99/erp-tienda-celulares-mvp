@@ -36,13 +36,7 @@ export function UsuariosList({
         <h1 className="text-lg font-semibold text-[var(--color-ink)]">Usuarios</h1>
         <button
           onClick={() => setCreando(true)}
-          className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
-          style={{
-            background:
-              "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow:
-              "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}
+          className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white btn-skeu-primary"
         >
           Nuevo usuario
         </button>
@@ -282,13 +276,7 @@ function UsuarioFormModal({
         <button
           type="submit"
           disabled={isPending}
-          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-          style={{
-            background:
-              "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow:
-              "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}
+          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50 btn-skeu-primary"
         >
           {isPending ? "Guardando\u2026" : usuario ? "Actualizar" : "Crear"}
         </button>

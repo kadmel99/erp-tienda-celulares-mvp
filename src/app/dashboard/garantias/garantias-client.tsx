@@ -41,11 +41,7 @@ export function GarantiasClient({ warranties, products, userId }: Props) {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-lg font-semibold text-[var(--color-ink)]">Garant&iacute;as</h1>
         <button onClick={() => setCreando(true)}
-          className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}>
+          className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white btn-skeu-primary">
           Nueva garant&iacute;a
         </button>
       </div>
@@ -59,7 +55,7 @@ export function GarantiasClient({ warranties, products, userId }: Props) {
         )}
         {warranties.map((w) => (
           <div key={w.id}
-            className="rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-4"
+            className="animate-fade-in-up rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-4"
             style={{ boxShadow: "var(--shadow-panel)" }}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
@@ -82,7 +78,7 @@ export function GarantiasClient({ warranties, products, userId }: Props) {
             </div>
 
             {expanded === w.id && (
-              <div className="mt-4 border-t border-[var(--color-line)] pt-4">
+              <div className="animate-fade-in-up mt-4 border-t border-[var(--color-line)] pt-4">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Cambiar estado</p>
                 <div className="flex flex-wrap gap-2">
                   {STATUS_FLOW.map((s) => (
@@ -153,11 +149,7 @@ function CrearGarantiaModal({ onClose, products, userId }: {
         </div>
         {error && <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{error}</p>}
         <button type="submit" disabled={isPending}
-          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}>
+          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50 btn-skeu-primary">
           {isPending ? "Creando\u2026" : "Crear"}
         </button>
       </form>

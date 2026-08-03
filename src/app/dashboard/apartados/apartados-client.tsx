@@ -63,11 +63,7 @@ export function ApartadosClient({ apartados, productos, clientes, sucursalId, us
         </div>
         {!readOnly && (
           <button onClick={() => setShowCrear(true)}
-            className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
-            style={{
-              background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-            }}>
+            className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white btn-skeu-primary">
             Nuevo apartado
           </button>
         )}
@@ -90,7 +86,7 @@ export function ApartadosClient({ apartados, productos, clientes, sucursalId, us
 
           return (
             <div key={a.id}
-              className="rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-4"
+              className="animate-fade-in-up rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-4"
               style={{ boxShadow: "var(--shadow-panel)" }}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -123,7 +119,7 @@ export function ApartadosClient({ apartados, productos, clientes, sucursalId, us
               </div>
 
               {showDetail?.id === a.id && (
-                <div className="mt-4 border-t border-[var(--color-line)] pt-4">
+                <div className="animate-fade-in-up mt-4 border-t border-[var(--color-line)] pt-4">
                   {!readOnly && (
                     <div className="mb-3 flex gap-2">
                       <button onClick={() => { setShowSeguimiento(a); setShowDetail(null); }}
@@ -248,11 +244,7 @@ function CrearApartadoModal({ onClose, productos, clientes, sucursalId, userId }
         </div>
         {error && <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{error}</p>}
         <button type="submit" disabled={isPending}
-          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}>
+          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50 btn-skeu-primary">
           {isPending ? "Creando\u2026" : "Crear apartado"}
         </button>
       </form>
@@ -299,11 +291,7 @@ function AbonoModal({ apartado, onClose, userId }: {
         </div>
         {error && <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{error}</p>}
         <button type="submit" disabled={isPending}
-          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}>
+          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50 btn-skeu-primary">
           {isPending ? "Registrando\u2026" : "Registrar abono"}
         </button>
       </form>
@@ -341,11 +329,7 @@ function SeguimientoModal({ apartado, onClose, userId }: {
         </div>
         {error && <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{error}</p>}
         <button type="submit" disabled={isPending}
-          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}>
+          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50 btn-skeu-primary">
           {isPending ? "Guardando\u2026" : "Guardar seguimiento"}
         </button>
       </form>

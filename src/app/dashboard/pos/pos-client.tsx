@@ -162,7 +162,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
   if (showSuccess) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-8">
-        <div className="max-w-md rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-8 text-center"
+        <div className="animate-scale-in max-w-md rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-8 text-center"
           style={{ boxShadow: "var(--shadow-panel)" }}>
           <div className="mb-3 text-3xl text-[var(--color-success)]">✓</div>
           <h2 className="mb-1 text-lg font-semibold text-[var(--color-ink)]">Venta registrada</h2>
@@ -182,11 +182,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
             </button>
             <button
               onClick={() => { setShowSuccess(null); setCart([]); setClienteId(""); setVerFacturaError(null); }}
-              className="flex-1 rounded-[12px] border-none px-6 py-2.5 text-sm font-semibold text-white"
-              style={{
-                background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-              }}
+              className="flex-1 rounded-[12px] border-none px-6 py-2.5 text-sm font-semibold text-white btn-skeu-primary"
             >
               Nueva venta
             </button>
@@ -228,7 +224,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
                 key={p.id}
                 onClick={() => addToCart(p)}
                 disabled={agotadoEnCarrito}
-                className="rounded-[12px] border border-[var(--color-line)] bg-[var(--color-panel)] p-3 text-left transition-all hover:border-[var(--color-accent)] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                className="animate-fade-in-up rounded-[12px] border border-[var(--color-line)] bg-[var(--color-panel)] p-3 text-left transition-all hover:border-[var(--color-accent)] hover:shadow-md active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
                 style={{ boxShadow: "var(--shadow-panel)" }}
               >
                 <div className="mb-1 flex items-center gap-1.5">
@@ -280,7 +276,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
             </p>
           )}
           {cart.map((item) => (
-            <div key={item.productId} className="mb-3 flex items-start justify-between gap-2">
+            <div key={item.productId} className="animate-fade-in-up mb-3 flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-[var(--color-ink)]">{item.nombre}</div>
                 <div className="flex items-center gap-2">
@@ -324,11 +320,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
             </div>
             <button
               onClick={() => setShowCheckout(true)}
-              className="mt-3 w-full rounded-[12px] border-none py-2.5 text-sm font-semibold text-white"
-              style={{
-                background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-              }}
+              className="mt-3 w-full rounded-[12px] border-none py-2.5 text-sm font-semibold text-white btn-skeu-primary"
             >
               Cobrar
             </button>
@@ -481,11 +473,7 @@ function CheckoutModal({
             Cancelar
           </button>
           <button type="submit" disabled={isPending}
-            className="flex-1 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-            style={{
-              background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-            }}
+            className="flex-1 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50 btn-skeu-primary"
           >
             {isPending ? "Procesando\u2026" : `Cobrar ${formatCOP(total)}`}
           </button>

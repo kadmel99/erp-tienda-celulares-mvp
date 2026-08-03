@@ -48,11 +48,7 @@ export function QrForm({ sucursalId }: { sucursalId: string }) {
         <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{error}</p>
       )}
       <button type="submit" disabled={isPending}
-        className="w-full rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-        style={{
-          background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-        }}>
+        className="w-full rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50 btn-skeu-primary">
         {isPending ? "Enviando\u2026" : "Enviar"}
       </button>
     </form>

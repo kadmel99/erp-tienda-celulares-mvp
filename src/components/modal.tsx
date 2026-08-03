@@ -17,11 +17,11 @@ export default function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-6"
+        className="w-full max-w-md rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-6 animate-scale-in"
         style={{ boxShadow: "var(--shadow-panel)" }}
         onClick={(e) => e.stopPropagation()}
       >

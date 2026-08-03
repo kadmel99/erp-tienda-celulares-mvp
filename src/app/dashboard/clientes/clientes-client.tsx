@@ -45,11 +45,7 @@ export function ClientesClient({ clientes: clientesIniciales }: Props) {
         </div>
         <button
           onClick={() => setCreando(true)}
-          className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}
+          className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white btn-skeu-primary"
         >
           Nuevo cliente
         </button>
@@ -89,7 +85,7 @@ export function ClientesClient({ clientes: clientesIniciales }: Props) {
               </tr>
             )}
             {filtrados.map((c) => (
-              <tr key={c.id} className="border-b border-[var(--color-line)] last:border-0">
+              <tr key={c.id} className="animate-fade-in border-b border-[var(--color-line)] last:border-0">
                 <td className="px-4 py-3 font-medium text-[var(--color-ink)]">{c.nombre}</td>
                 <td className="px-4 py-3 text-[var(--color-ink-soft)]">{c.cedula ?? "—"}</td>
                 <td className="px-4 py-3 text-[var(--color-ink-soft)]">{c.telefono ?? "—"}</td>
@@ -197,11 +193,7 @@ function EditClientModal({ cliente, onClose, onUpdated }: {
         </div>
         {error && <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{error}</p>}
         <button type="submit" disabled={isPending}
-          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}>
+          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50 btn-skeu-primary">
           {isPending ? "Guardando…" : "Guardar cambios"}
         </button>
       </form>

@@ -121,11 +121,7 @@ export function ServicioTecnicoClient({ ordenes, clientes, productos, tecnicos, 
           <p className="text-sm text-[var(--color-ink-soft)]">{ordenes.length} órdenes</p>
         </div>
         <button onClick={() => setCreando(true)}
-          className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}>
+          className="rounded-[12px] border-none px-4 py-2 text-sm font-semibold text-white btn-skeu-primary">
           Nueva orden
         </button>
       </div>
@@ -197,7 +193,7 @@ function OrdenCard({ orden, expanded, onToggle, productos, userId, isAdmin }: {
   }
 
   return (
-    <div className="rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-4"
+    <div className="animate-fade-in-up rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] p-4"
       style={{ boxShadow: "var(--shadow-panel)" }}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
@@ -220,7 +216,7 @@ function OrdenCard({ orden, expanded, onToggle, productos, userId, isAdmin }: {
       </div>
 
       {expanded && (
-        <div className="mt-4 flex flex-col gap-5 border-t border-[var(--color-line)] pt-4">
+        <div className="animate-fade-in-up mt-4 flex flex-col gap-5 border-t border-[var(--color-line)] pt-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">Equipo</p>
@@ -560,11 +556,7 @@ function NuevaOrdenModal({ onClose, clientes, tecnicos, sucursalId, userId, onCl
 
         {error && <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{error}</p>}
         <button type="submit" disabled={isPending}
-          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-          style={{
-            background: "linear-gradient(180deg, var(--color-accent-hi), var(--color-accent) 55%, var(--color-accent-deep))",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 var(--color-accent-deep), 0 6px 14px rgba(20,101,117,0.35)",
-          }}>
+          className="mt-2 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50 btn-skeu-primary">
           {isPending ? "Creando…" : "Crear orden"}
         </button>
       </form>
