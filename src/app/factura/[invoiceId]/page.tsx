@@ -74,7 +74,7 @@ export default async function FacturaPublicaPage({
         </span>
       </div>
 
-      <FacturaViewClient invoiceId={invoice.id} />
+      <FacturaViewClient invoiceId={invoice.id} numero={invoice.numero} />
     </PageShell>
   );
 }

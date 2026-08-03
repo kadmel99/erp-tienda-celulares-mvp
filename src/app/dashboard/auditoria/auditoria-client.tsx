@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useState } from "react";
 import Modal from "@/components/modal";
 import { crearHallazgo, resolverHallazgo, generarReportePDF } from "./actions";
+import { openPdfDataUrl } from "@/lib/open-pdf";
 
 const TIPOS = ["INVENTARIO", "CAJA", "VENTAS", "OTRO"] as const;
 const SEVERIDADES = ["BAJA", "MEDIA", "ALTA"] as const;
@@ -63,7 +64,7 @@ export function AuditoriaClient({ hallazgos, sucursales, isAdmin }: Props) {
     setMsg(null);
     const result = await generarReportePDF(filtrados.map((h) => h.id));
     if (typeof result === "string") {
-      window.open(result, "_blank");
+      openPdfDataUrl(result, "reporte-auditoria.pdf");
     } else {
       setMsg({ text: result.error, error: true });
     }

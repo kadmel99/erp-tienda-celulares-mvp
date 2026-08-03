@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getPrisma } from "@/lib/prisma";
 import Link from "next/link";
+import { Header } from "@/components/header";
 
 export default async function AdminLayout({
   children,
@@ -23,16 +24,22 @@ export default async function AdminLayout({
     if (usuario?.debeCambiarPassword) redirect("/cambiar-password");
   }
 
+  const userName = session.user.name ?? session.user.email ?? "Usuario";
+
   return (
     <div>
-      <div className="border-b border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-3">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]"
-        >
-          <span aria-hidden>&larr;</span> Volver al dashboard
-        </Link>
-      </div>
+      <Header
+        left={
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]"
+          >
+            <span aria-hidden>&larr;</span> Volver al dashboard
+          </Link>
+        }
+        userName={userName}
+        roleLabel="Administrador General"
+      />
       {children}
     </div>
   );

@@ -43,16 +43,15 @@ const fiscalNav: NavItem[] = [
 
 type SidebarProps = {
   role: "ADMIN_GENERAL" | "OPERADOR" | "REVISION_FISCAL";
-  userName: string;
 };
 
-export default function Sidebar({ role, userName }: SidebarProps) {
+export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
   const items = role === "ADMIN_GENERAL" ? adminNav : role === "REVISION_FISCAL" ? fiscalNav : operatorNav;
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-[var(--color-line)] bg-[var(--color-panel)]">
-      <div className="flex items-center gap-2.5 border-b border-[var(--color-line)] px-4 py-4">
+    <aside className="flex h-full w-56 shrink-0 flex-col border-r border-[var(--color-line)] bg-[var(--color-panel)]">
+      <div className="flex shrink-0 items-center gap-2.5 border-b border-[var(--color-line)] px-4 py-4">
         <div
           className="h-8 w-8 overflow-hidden rounded-full border border-[var(--color-line-strong)]"
           style={{
@@ -95,21 +94,6 @@ export default function Sidebar({ role, userName }: SidebarProps) {
           );
         })}
       </nav>
-
-      <div className="border-t border-[var(--color-line)] p-3">
-        <div className="mb-2 truncate text-xs font-medium text-[var(--color-ink)]">
-          {userName}
-        </div>
-        <form action="/api/auth/signout" method="POST">
-          <input type="hidden" name="redirectTo" value="/login" />
-          <button
-            type="submit"
-            className="w-full rounded-[10px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-3 py-1.5 text-xs font-medium text-[var(--color-ink-soft)] transition-colors hover:bg-[var(--color-danger-soft)] hover:text-[var(--color-danger)]"
-          >
-            Cerrar sesi\u00f3n
-          </button>
-        </form>
-      </div>
     </aside>
   );
 }

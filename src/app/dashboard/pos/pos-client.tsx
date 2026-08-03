@@ -7,6 +7,7 @@ import { getInvoicePDFUrl } from "../facturacion/actions";
 import { updateCliente } from "../clientes/actions";
 import { NewClientModal } from "@/components/new-client-modal";
 import { formatCOP } from "@/lib/money";
+import { openPdfDataUrl } from "@/lib/open-pdf";
 
 type Product = {
   id: string;
@@ -91,7 +92,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
     setVerFacturaError(null);
     const result = await getInvoicePDFUrl(showSuccess.invoiceId);
     if (typeof result === "string") {
-      window.open(result, "_blank");
+      openPdfDataUrl(result, `factura-${showSuccess.numero}.pdf`);
     } else {
       setVerFacturaError(result.error);
     }

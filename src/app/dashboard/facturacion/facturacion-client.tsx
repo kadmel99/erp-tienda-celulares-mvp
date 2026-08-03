@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { enviarFacturaEmail, getInvoicePDFUrl } from "./actions";
 import { formatCOP } from "@/lib/money";
+import { openPdfDataUrl } from "@/lib/open-pdf";
 
 type Invoice = {
   id: string;
@@ -33,10 +34,10 @@ export function FacturacionClient({ invoices, readOnly = false }: Props) {
     setSendingId(null);
   }
 
-  async function handleView(id: string) {
+  async function handleView(id: string, numero: number) {
     const result = await getInvoicePDFUrl(id);
     if (typeof result === "string") {
-      window.open(result, "_blank");
+      openPdfDataUrl(result, `factura-${numero}.pdf`);
     } else if (result && "error" in result) {
       setMsg({ text: result.error as string, error: true });
     }
@@ -98,7 +99,7 @@ export function FacturacionClient({ invoices, readOnly = false }: Props) {
                   {new Date(inv.createdAt).toLocaleDateString("es-CO")}
                 </td>
                 <td className="flex gap-2 px-4 py-3">
-                  <button onClick={() => handleView(inv.id)}
+                  <button onClick={() => handleView(inv.id, inv.numero)}
                     className="rounded-[8px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] px-3 py-1 text-xs font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]">
                     PDF
                   </button>

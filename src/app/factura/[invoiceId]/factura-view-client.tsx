@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { getInvoicePDFUrl } from "@/app/dashboard/facturacion/actions";
+import { openPdfDataUrl } from "@/lib/open-pdf";
 
-export function FacturaViewClient({ invoiceId }: { invoiceId: string }) {
+export function FacturaViewClient({ invoiceId, numero }: { invoiceId: string; numero: number }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -11,7 +12,7 @@ export function FacturaViewClient({ invoiceId }: { invoiceId: string }) {
     setLoading(true);
     setError(null);
     const result = await getInvoicePDFUrl(invoiceId);
-    if (typeof result === "string") window.open(result, "_blank");
+    if (typeof result === "string") openPdfDataUrl(result, `factura-${numero}.pdf`);
     else setError(result.error);
     setLoading(false);
   }

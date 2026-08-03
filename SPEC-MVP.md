@@ -199,12 +199,12 @@ Resumen de entidades (ver el archivo para campos, enums e índices completos):
 
 ## 11. Preguntas abiertas (resolver antes de programar el módulo correspondiente)
 
-| # | Pregunta | Módulo afectado | Por qué importa |
+| # | Pregunta | Módulo afectado | Estado |
 |---|---|---|---|
-| 1 | Si un apartado se cancela, ¿se devuelve el abono al cliente o queda como saldo a favor para otra compra? | Apartados (6.6) | Define si `ApartadoStatus.CANCELADO` dispara un `CashMovement` de egreso o no — sin esto no se puede programar la cancelación. |
-| 2 | Cuando hay pago en especie, ¿`Sale.total` es el valor bruto del producto o ya neto del valor reconocido del trade-in? | POS (6.5) / Pago en especie (6.7) | Afecta el cálculo del recibo, lo que se factura y lo que se registra en caja — hay que fijarlo antes de tocar el checkout. |
-| 3 | Al anular una factura, ¿el número consecutivo se reutiliza o queda con un hueco? | Facturación interna (6.10) | Cambia la validación de `@@unique([sucursalId, numero])` y cómo se calcula el siguiente número. |
-| 4 | Cuando un prospecto captado por QR termina comprando, ¿se convierte automáticamente en `Cliente` o quedan como registros separados sin relación? | QR/Prospectos (6.4) | Si se promueve automático, hace falta una regla de "match" (por teléfono/correo) antes de programar el checkout. |
-| 5 | ¿Cuál es el formato exacto del Excel que usan hoy para inventario/ventas? | Migración de datos (estimación, sección 10) | Se necesita para diseñar el importador — pedir el archivo real al cliente antes de esa fase. |
+| 1 | Si un apartado se cancela, ¿se devuelve el abono al cliente o queda como saldo a favor para otra compra? | Apartados (6.6) | **Resuelto (2026-08-03): se devuelve lo abonado.** Al cancelar, `ApartadoStatus.CANCELADO` debe disparar un `CashMovement` de egreso por el total abonado. Falta implementar el flujo de cancelación en sí (hoy no existe en el código). |
+| 2 | Cuando hay pago en especie, ¿`Sale.total` es el valor bruto del producto o ya neto del valor reconocido del trade-in? | POS (6.5) / Pago en especie (6.7) | Pendiente — no se resuelve todavía. |
+| 3 | Al anular una factura, ¿el número consecutivo se reutiliza o queda con un hueco? | Facturación interna (6.10) | **Resuelto (2026-08-03): no se reutiliza.** La factura queda con estado `ANULADA`, visible en el listado (no se borra, no se reemplaza su número). Falta implementar la acción de anular en sí (hoy `InvoiceStatus.ANULADA` existe en el schema y en el estilo de la UI, pero no hay botón/acción que la dispare). |
+| 4 | Cuando un prospecto captado por QR termina comprando, ¿se convierte automáticamente en `Cliente` o quedan como registros separados sin relación? | QR/Prospectos (6.4) | Pendiente — no se resuelve todavía. |
+| 5 | ¿Cuál es el formato exacto del Excel que usan hoy para inventario/ventas? | Migración de datos (estimación, sección 10) | Pendiente — no se necesita por ahora. |
 
-Recomendación: resolver la pregunta correspondiente justo antes de empezar cada módulo (no hace falta cerrarlas todas de una vez), salvo la 5 que conviene pedir cuanto antes porque depende del cliente y no de una decisión interna.
+Recomendación: resolver la pregunta correspondiente justo antes de empezar cada módulo (no hace falta cerrarlas todas de una vez).
