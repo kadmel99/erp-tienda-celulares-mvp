@@ -29,6 +29,7 @@ const operatorNav: NavItem[] = [
   { label: "POS", href: "/dashboard/pos" },
   { label: "Apartados", href: "/dashboard/apartados" },
   { label: "Clientes", href: "/dashboard/clientes" },
+  { label: "Cartera", href: "/dashboard/cartera" },
   { label: "Caja", href: "/dashboard/caja" },
   { label: "Garant\u00edas", href: "/dashboard/garantias" },
   { label: "Servicio t\u00e9cnico", href: "/dashboard/servicio-tecnico" },

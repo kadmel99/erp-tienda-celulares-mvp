@@ -9,6 +9,7 @@ import { InvoicePDF } from "@/lib/pdf/invoice";
 import nodemailer from "nodemailer";
 import { requireWriteAccess } from "@/lib/authz";
 import { formatCOP } from "@/lib/money";
+import type { InventoryMovementType, CashMovementType } from "@/generated/prisma/enums";
 
 export async function getInvoicePDFUrl(invoiceId: string): Promise<string | { error: string }> {
   const prisma = getPrisma();
@@ -165,5 +166,95 @@ export async function enviarFacturaEmail(invoiceId: string) {
     return { success: true };
   } catch {
     return { error: "Error al enviar email" };
+  }
+}
+
+export async function devolverItem(formData: FormData) {
+  const denied = await requireWriteAccess();
+  if (denied) return denied;
+
+  const prisma = getPrisma();
+  if (!prisma) return { error: "Error de conexión" };
+
+  const saleItemId = formData.get("saleItemId") as string;
+  const userId = formData.get("userId") as string;
+  const cantidad = Number(formData.get("cantidad")) || 0;
+  const motivo = (formData.get("motivo") as string)?.trim();
+  const reembolso = Number(formData.get("reembolso")) || 0;
+
+  if (!saleItemId || !userId || !motivo || cantidad < 1) {
+    return { error: "Datos incompletos" };
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const saleItem = await tx.saleItem.findUnique({
+        where: { id: saleItemId },
+        include: {
+          sale: { select: { sucursalId: true } },
+          devoluciones: { select: { cantidad: true } },
+        },
+      });
+      if (!saleItem) throw new Error("Ítem no encontrado");
+
+      const yaDevuelto = saleItem.devoluciones.reduce((s, d) => s + d.cantidad, 0);
+      const disponible = saleItem.cantidad - yaDevuelto;
+      if (cantidad > disponible) {
+        throw new Error(`Solo se pueden devolver ${disponible} unidad(es) de este ítem`);
+      }
+
+      let session = null;
+      if (reembolso > 0) {
+        session = await tx.cashRegisterSession.findFirst({
+          where: { sucursalId: saleItem.sale.sucursalId, cerradaEn: null },
+        });
+        if (!session) {
+          throw new Error("Debes abrir caja para registrar el reembolso");
+        }
+      }
+
+      await tx.saleItemDevolucion.create({
+        data: { saleItemId, cantidad, motivo, reembolso, userId },
+      });
+
+      const producto = await tx.product.findUniqueOrThrow({
+        where: { id: saleItem.productId },
+        select: { cantidad: true },
+      });
+      await tx.product.update({
+        where: { id: saleItem.productId },
+        data: { cantidad: producto.cantidad + cantidad, disponible: true },
+      });
+      await tx.inventoryMovement.create({
+        data: {
+          productId: saleItem.productId,
+          tipo: "ENTRADA" as InventoryMovementType,
+          cantidad,
+          motivo: `Devolución: ${motivo}`,
+          referenceType: "sale_return",
+          referenceId: saleItem.saleId,
+          userId,
+        },
+      });
+
+      if (reembolso > 0 && session) {
+        await tx.cashMovement.create({
+          data: {
+            sessionId: session.id,
+            tipo: "EGRESO_DEVOLUCION" as CashMovementType,
+            monto: reembolso,
+            concepto: `Devolución - Venta #${saleItem.saleId.slice(0, 8)}`,
+            referenceId: saleItem.saleId,
+          },
+        });
+      }
+    });
+
+    revalidatePath("/dashboard/facturacion");
+    revalidatePath("/dashboard/inventario");
+    revalidatePath("/dashboard/caja");
+    return { success: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Error al registrar la devolución" };
   }
 }

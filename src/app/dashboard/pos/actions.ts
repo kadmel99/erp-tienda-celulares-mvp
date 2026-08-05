@@ -18,11 +18,20 @@ export async function createSale(formData: FormData) {
   const total = Number(formData.get("total"));
   const clienteId = (formData.get("clienteId") as string) || null;
   const itemsJson = formData.get("items") as string;
+  const montoPagadoRaw = formData.get("montoPagado") as string;
+  const montoPagado = montoPagadoRaw ? Number(montoPagadoRaw) : total;
 
   if (!sucursalId || !userId || !metodoPago || !total || !itemsJson) {
     return { error: "Datos incompletos" };
   }
+  if (montoPagado < 0 || montoPagado > total) {
+    return { error: "El monto pagado no puede ser negativo ni mayor al total" };
+  }
+  if (montoPagado < total && !clienteId) {
+    return { error: "Una venta a crédito necesita un cliente asociado" };
+  }
 
+  const saldoPendiente = total - montoPagado;
   const items = JSON.parse(itemsJson) as { productId: string; price: number; qty?: number }[];
 
   try {
@@ -33,6 +42,8 @@ export async function createSale(formData: FormData) {
           clienteId,
           userId,
           total,
+          montoPagado,
+          saldoPendiente,
           metodoPago: metodoPago as PaymentMethod,
           items: {
             create: items.map((item) => ({
@@ -70,19 +81,23 @@ export async function createSale(formData: FormData) {
         });
       }
 
-      const session = await tx.cashRegisterSession.findFirst({
-        where: { sucursalId, cerradaEn: null },
-      });
-      if (session) {
-        await tx.cashMovement.create({
-          data: {
-            sessionId: session.id,
-            tipo: "INGRESO_VENTA" as CashMovementType,
-            monto: total,
-            concepto: `Venta #${sale.id.slice(0, 8)}`,
-            referenceId: sale.id,
-          },
+      if (montoPagado > 0) {
+        const session = await tx.cashRegisterSession.findFirst({
+          where: { sucursalId, cerradaEn: null },
         });
+        if (session) {
+          await tx.cashMovement.create({
+            data: {
+              sessionId: session.id,
+              tipo: "INGRESO_VENTA" as CashMovementType,
+              monto: montoPagado,
+              concepto: saldoPendiente > 0
+                ? `Venta #${sale.id.slice(0, 8)} (abono inicial)`
+                : `Venta #${sale.id.slice(0, 8)}`,
+              referenceId: sale.id,
+            },
+          });
+        }
       }
 
       const lastInvoice = await tx.invoice.findFirst({
@@ -106,7 +121,14 @@ export async function createSale(formData: FormData) {
 
     revalidatePath("/dashboard/inventario");
     revalidatePath("/dashboard/pos");
-    return { success: true, saleId: result.id, numero: result.numero, invoiceId: result.invoiceId };
+    revalidatePath("/dashboard/cartera");
+    return {
+      success: true,
+      saleId: result.id,
+      numero: result.numero,
+      invoiceId: result.invoiceId,
+      saldoPendiente,
+    };
   } catch {
     return { error: "Error al procesar la venta" };
   }

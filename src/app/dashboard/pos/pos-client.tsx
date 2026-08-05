@@ -73,7 +73,7 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
   const [metodoPago, setMetodoPago] = useState("EFECTIVO");
   const [clienteId, setClienteId] = useState("");
   const [clientsList, setClientsList] = useState(clients);
-  const [showSuccess, setShowSuccess] = useState<{ saleId: string; numero: number; invoiceId: string } | null>(null);
+  const [showSuccess, setShowSuccess] = useState<{ saleId: string; numero: number; invoiceId: string; saldoPendiente: number } | null>(null);
   const [showNewClient, setShowNewClient] = useState(false);
   const [verFacturaLoading, setVerFacturaLoading] = useState(false);
   const [verFacturaError, setVerFacturaError] = useState<string | null>(null);
@@ -166,9 +166,15 @@ export function PosClient({ products, clients, sucursalId, userId, cajaAbierta }
           style={{ boxShadow: "var(--shadow-panel)" }}>
           <div className="mb-3 text-3xl text-[var(--color-success)]">✓</div>
           <h2 className="mb-1 text-lg font-semibold text-[var(--color-ink)]">Venta registrada</h2>
-          <p className="mb-6 text-sm text-[var(--color-ink-soft)]">
+          <p className="mb-1 text-sm text-[var(--color-ink-soft)]">
             Factura #{showSuccess.numero} generada exitosamente.
           </p>
+          {showSuccess.saldoPendiente > 0 && (
+            <p className="mb-6 text-sm font-medium text-[var(--color-danger)]">
+              Venta a crédito — saldo pendiente: {formatCOP(showSuccess.saldoPendiente)}
+            </p>
+          )}
+          {showSuccess.saldoPendiente === 0 && <div className="mb-6" />}
           {verFacturaError && (
             <p className="mb-4 rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{verFacturaError}</p>
           )}
@@ -365,11 +371,17 @@ function CheckoutModal({
   clienteId: string;
   setClienteId: (v: string) => void;
   onClose: () => void;
-  onSuccess: (result: { saleId: string; numero: number; invoiceId: string }) => void;
+  onSuccess: (result: { saleId: string; numero: number; invoiceId: string; saldoPendiente: number }) => void;
   showNewClient: boolean;
   setShowNewClient: (v: boolean) => void;
   onClienteUpsert: (c: Cliente) => void;
 }) {
+  const [esCredito, setEsCredito] = useState(false);
+  const [montoPagadoInput, setMontoPagadoInput] = useState("0");
+
+  const montoPagado = esCredito ? Math.max(0, Math.min(total, Number(montoPagadoInput) || 0)) : total;
+  const saldoPendiente = total - montoPagado;
+
   const [state, formAction, isPending] = useActionState(async (_prev: unknown, fd: FormData) => {
     fd.set("sucursalId", sucursalId);
     fd.set("userId", userId);
@@ -377,9 +389,15 @@ function CheckoutModal({
     fd.set("metodoPago", metodoPago);
     fd.set("clienteId", clienteId || "");
     fd.set("total", String(total));
+    fd.set("montoPagado", String(montoPagado));
     const result = await createSale(fd);
     if (result && "success" in result && result.success) {
-      onSuccess({ saleId: result.saleId as string, numero: result.numero as number, invoiceId: result.invoiceId as string });
+      onSuccess({
+        saleId: result.saleId as string,
+        numero: result.numero as number,
+        invoiceId: result.invoiceId as string,
+        saldoPendiente: Number(result.saldoPendiente ?? 0),
+      });
     }
     return result;
   }, undefined);
@@ -462,6 +480,31 @@ function CheckoutModal({
           )}
         </div>
 
+        <div>
+          <label className="flex items-center gap-2 text-sm text-[var(--color-ink)]">
+            <input type="checkbox" checked={esCredito} onChange={(e) => setEsCredito(e.target.checked)}
+              className="h-4 w-4" />
+            Venta a crédito (el cliente paga después)
+          </label>
+          {esCredito && (
+            <div className="animate-fade-in-up mt-2 flex flex-col gap-2 rounded-[10px] border border-[var(--color-line)] bg-[var(--color-panel-raised)] p-3">
+              {!clienteId && (
+                <p className="text-xs text-[var(--color-danger)]">Selecciona un cliente arriba para vender a crédito.</p>
+              )}
+              <label className="text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">
+                Monto que paga ahora (abono inicial, opcional)
+              </label>
+              <input type="number" min="0" max={total} value={montoPagadoInput}
+                onChange={(e) => setMontoPagadoInput(e.target.value)}
+                className="w-full rounded-[10px] border-none bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] outline-none"
+                style={{ boxShadow: "var(--shadow-inset)" }} />
+              <p className="text-xs text-[var(--color-ink-soft)]">
+                Saldo pendiente: <strong className="text-[var(--color-danger)]">{formatCOP(saldoPendiente)}</strong>
+              </p>
+            </div>
+          )}
+        </div>
+
         {error && (
           <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-sm text-[var(--color-danger)]">{error}</p>
         )}
@@ -472,10 +515,14 @@ function CheckoutModal({
           >
             Cancelar
           </button>
-          <button type="submit" disabled={isPending}
+          <button type="submit" disabled={isPending || (esCredito && !clienteId)}
             className="flex-1 rounded-[12px] border-none py-2.5 text-sm font-semibold text-white disabled:opacity-50 btn-skeu-primary"
           >
-            {isPending ? "Procesando\u2026" : `Cobrar ${formatCOP(total)}`}
+            {isPending
+              ? "Procesando\u2026"
+              : esCredito
+                ? `Cobrar ${formatCOP(montoPagado)} ahora`
+                : `Cobrar ${formatCOP(total)}`}
           </button>
         </div>
       </form>

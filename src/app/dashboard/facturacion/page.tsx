@@ -7,7 +7,7 @@ export default async function FacturacionPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const user = session.user as { role: string; sucursalId: string | null; sucursalIds: string[] };
+  const user = session.user as { id: string; role: string; sucursalId: string | null; sucursalIds: string[] };
   const prisma = getPrisma();
   if (!prisma) return <p className="p-6 text-[var(--color-ink-soft)]">Error de conexi&oacute;n</p>;
 
@@ -25,6 +25,15 @@ export default async function FacturacionPage() {
         select: {
           total: true,
           cliente: { select: { nombre: true } },
+          items: {
+            select: {
+              id: true,
+              cantidad: true,
+              precioUnit: true,
+              product: { select: { nombre: true, modelo: true } },
+              devoluciones: { select: { cantidad: true } },
+            },
+          },
         },
       },
     },
@@ -32,7 +41,7 @@ export default async function FacturacionPage() {
 
   return (
     <div className="p-6">
-      <FacturacionClient invoices={invoices} readOnly={isFiscal} />
+      <FacturacionClient invoices={invoices} readOnly={isFiscal} userId={user.id} />
     </div>
   );
 }

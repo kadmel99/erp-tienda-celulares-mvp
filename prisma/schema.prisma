@@ -193,22 +193,38 @@ enum PaymentMethod {
 }
 
 model Sale {
-  id         String        @id @default(cuid())
-  sucursalId String        @map("sucursal_id")
-  sucursal   Sucursal      @relation(fields: [sucursalId], references: [id])
-  clienteId  String?       @map("cliente_id")
-  cliente    Cliente?      @relation(fields: [clienteId], references: [id])
-  userId     String        @map("user_id")
-  total      Decimal       @db.Decimal(12, 2)
-  metodoPago PaymentMethod @map("metodo_pago")
-  createdAt  DateTime      @default(now()) @map("created_at")
+  id             String        @id @default(cuid())
+  sucursalId     String        @map("sucursal_id")
+  sucursal       Sucursal      @relation(fields: [sucursalId], references: [id])
+  clienteId      String?       @map("cliente_id")
+  cliente        Cliente?      @relation(fields: [clienteId], references: [id])
+  userId         String        @map("user_id")
+  total          Decimal       @db.Decimal(12, 2)
+  montoPagado    Decimal       @default(0) @map("monto_pagado") @db.Decimal(12, 2)
+  saldoPendiente Decimal       @default(0) @map("saldo_pendiente") @db.Decimal(12, 2)
+  metodoPago     PaymentMethod @map("metodo_pago")
+  createdAt      DateTime      @default(now()) @map("created_at")
 
   items   SaleItem[]
   invoice Invoice?
   tradeIn TradeIn?
+  abonos  SaleAbono[]
 
   @@index([sucursalId, createdAt])
+  @@index([sucursalId, saldoPendiente])
   @@map("sales")
+}
+
+model SaleAbono {
+  id         String        @id @default(cuid())
+  saleId     String        @map("sale_id")
+  sale       Sale          @relation(fields: [saleId], references: [id])
+  monto      Decimal       @db.Decimal(12, 2)
+  metodoPago PaymentMethod @map("metodo_pago")
+  userId     String        @map("user_id")
+  createdAt  DateTime      @default(now()) @map("created_at")
+
+  @@map("sale_abonos")
 }
 
 model SaleItem {
@@ -220,7 +236,22 @@ model SaleItem {
   cantidad   Int     @default(1)
   precioUnit Decimal @map("precio_unit") @db.Decimal(12, 2)
 
+  devoluciones SaleItemDevolucion[]
+
   @@map("sale_items")
+}
+
+model SaleItemDevolucion {
+  id         String   @id @default(cuid())
+  saleItemId String   @map("sale_item_id")
+  saleItem   SaleItem @relation(fields: [saleItemId], references: [id])
+  cantidad   Int      @default(1)
+  motivo     String
+  reembolso  Decimal  @default(0) @db.Decimal(12, 2)
+  userId     String   @map("user_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("sale_item_devoluciones")
 }
 
 // ── Apartados y cartera ────────────────────────────────────────
@@ -346,6 +377,7 @@ enum CashMovementType {
   INGRESO_CAJA_MENOR
   INGRESO_SERVICIO_TECNICO
   EGRESO_CAJA_MENOR
+  EGRESO_DEVOLUCION
   OTRO
 }
 
